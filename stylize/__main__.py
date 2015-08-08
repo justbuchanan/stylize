@@ -4,30 +4,17 @@ import struct
 import sys
 import termios
 
-from stylize import stylize
+from stylize import stylize, util
 
-print("module:DSFSDFDSFDSFDSFDS")
-print(stylize)
-
-
+from stylize.clang_formatter import ClangFormatter
+from stylize.yapf_formatter import YapfFormatter
 
 num_so_far = num_changed = 0
+
 
 def main():
     global num_so_far
     global num_changed
-
-    # yapf: disable
-    exclude_directories = set([
-        './build',
-        './third_party',
-        './firmware/build',
-        './firmware/robot/cpu/at91sam7s256',
-        './firmware/robot/cpu/at91sam7s321',
-        './firmware/robot/cpu/at91sam7s64'
-    ])
-    # yapf: enable
-
 
     # Command line options
     parser = argparse.ArgumentParser(
@@ -49,49 +36,62 @@ def main():
     parser.add_argument("--exclude_dirs", nargs="*")
     ARGS = parser.parse_args()
 
+    # TODO: actually get these from cmd line
+    # yapf: disable
+    ARGS.exclude_dirs = set([
+        './build', './third_party', './firmware/build',
+        './firmware/robot/cpu/at91sam7s256',
+        './firmware/robot/cpu/at91sam7s321', './firmware/robot/cpu/at91sam7s64'
+    ])
+    # yapf: enable
 
-
-    TERM_WIDTH = struct.unpack('hh', fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ,
-                                             '1234'))[1]
+    TERM_WIDTH = struct.unpack('hh',
+                               fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ,
+                                           '1234'))[1]
 
     # Print initial status info
     verb = "Checkstyling" if ARGS.check else "Formatting"
     if ARGS.all:
         print("%s all c++ and python files in the project..." % verb)
-        files_to_format = stylize.enumerate_all_files()
+        files_to_format = stylize.enumerate_all_files(ARGS.exclude_dirs)
     else:
         print("%s files that differ from %s" % (verb, ARGS.diffbase))
-        files_to_format = stylize.enumerate_changed_files(ARGS.diffbase)
+        files_to_format = stylize.enumerate_changed_files(ARGS.exclude_dirs,
+                                                          ARGS.diffbase)
     print("-" * TERM_WIDTH)
 
+    formatters = [ClangFormatter(), YapfFormatter()]
 
-
-
+    # map file extension to formatter
+    formatter_map = {}
+    for f in formatters:
+        for ext in f.file_extensions:
+            formatter_map[ext] = f
 
     def handle_file(filepath_and_type):
+        global num_so_far
+        global num_changed
+
         filetype = filepath_and_type[0]
         filepath = filepath_and_type[1]
 
-        if filetype == "cpp":
-            needed_formatting = stylize.format_cpp(filepath, ARGS.check)
-        elif filetype == "py":
-            needed_formatting = stylize.format_py(filepath, ARGS.check)
-        else:
+        formatter = formatter_map["." + filetype]
+
+        if formatter == None:
             raise NameError("Unknown file type: %s" % filetype)
 
-        global num_changed
-        global num_so_far
+        needed_formatting = formatter.run(filepath, ARGS.check)
+
         num_so_far += 1
         if needed_formatting:
             num_changed += 1
 
             suffix = "BAD" if ARGS.check else "FIXED"
-            stylize.print_justified(filepath, suffix)
+            util.print_justified(filepath, suffix)
         else:
-            stylize.print_justified("> %s: %s" % (filetype, filepath), "[%d]" % num_so_far,
-                          end="\r")
-
-
+            util.print_justified("> %s: %s" % (filetype, filepath),
+                                 "[%d]" % num_so_far,
+                                 end="\r")
 
     # Use all the cores!
     from multiprocessing.pool import ThreadPool
@@ -100,8 +100,8 @@ def main():
 
     # Print final stats
     if ARGS.check:
-        stylize.print_justified(
+        util.print_justified(
             "[%d / %d] files need formatting" % (num_changed, num_so_far), "")
     else:
-        stylize.print_justified("[%d / %d] files formatted" % (num_changed, num_so_far),
-                        "")
+        util.print_justified(
+            "[%d / %d] files formatted" % (num_changed, num_so_far), "")
