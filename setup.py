@@ -1,10 +1,10 @@
 
 from setuptools import setup
-import format_tool
+import stylize
 
 
 setup(
-  name='format-tool',
+  name='stylize'
   version=format_tool.__version__,
   description='A tool for quickly formatting and checkstyling C/C++ and Python code',
   license='Apache License, Version 2.0',
@@ -18,3 +18,4 @@ setup(
                 'Programming Language :: Python 3.4',
                 'Topic :: Software Development :: Libraries :: Python Modules',
                 'Topic :: Software Development :: Quality Assurance',])
+
