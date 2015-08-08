@@ -11,12 +11,10 @@ from stylize import util
 # logfile = open("reformat.log", "w")
 logfile = open("/dev/null", "w")
 
-TERM_WIDTH = util.get_terminal_width()
-
 
 def enumerate_all_files(exclude=[]):
     for root, dirs, files in os.walk('.', topdown=True):
-        dirs[:] = [d for d in dirs if root + '/' + d not in exclude]
+        dirs[:] = [d for d in dirs if os.path.abspath(root + '/' + d) not in exclude]
         for f in files:
             yield root + '/' + f
 

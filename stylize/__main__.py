@@ -3,6 +3,7 @@ import fcntl
 import struct
 import sys
 import termios
+import os
 
 from stylize import stylize, util
 
@@ -30,24 +31,18 @@ def main():
         help=
         "By default, we only format or checkstyle files that differ from the diffbase.  Pass --all to instead check all files in the repo")
     parser.add_argument(
+        "--exclude_dirs",
+        type=str,
+        default=[],
+        nargs="+",
+        help="A list of directories to exclude")
+    parser.add_argument(
         "--diffbase",
-        default="robojackets/master",
+        default="origin/master",
         help="The branch/tag/SHA1 in git to compare against.")
-    parser.add_argument("--exclude_dirs", nargs="*")
     ARGS = parser.parse_args()
 
-    # TODO: actually get these from cmd line
-    # yapf: disable
-    ARGS.exclude_dirs = set([
-        './build', './third_party', './firmware/build',
-        './firmware/robot/cpu/at91sam7s256',
-        './firmware/robot/cpu/at91sam7s321', './firmware/robot/cpu/at91sam7s64'
-    ])
-    # yapf: enable
-
-    TERM_WIDTH = struct.unpack('hh',
-                               fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ,
-                                           '1234'))[1]
+    ARGS.exclude_dirs = [os.path.abspath(p) for p in ARGS.exclude_dirs]
 
     # Print initial status info
     verb = "Checkstyling" if ARGS.check else "Formatting"
@@ -58,7 +53,7 @@ def main():
         print("%s files that differ from %s" % (verb, ARGS.diffbase))
         files_to_format = stylize.enumerate_changed_files(ARGS.exclude_dirs,
                                                           ARGS.diffbase)
-    print("-" * TERM_WIDTH)
+    print("-" * util.get_terminal_width())
 
     formatters = [ClangFormatter(), YapfFormatter()]
 
