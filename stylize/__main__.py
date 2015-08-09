@@ -1,3 +1,7 @@
+from stylize import util
+from stylize.clang_formatter import ClangFormatter
+from stylize.yapf_formatter import YapfFormatter
+
 import argparse
 import fcntl
 import struct
@@ -5,11 +9,6 @@ import subprocess
 import sys
 import termios
 import os
-
-from stylize import util
-
-from stylize.clang_formatter import ClangFormatter
-from stylize.yapf_formatter import YapfFormatter
 
 
 def enumerate_all_files(exclude=[]):
@@ -20,7 +19,6 @@ def enumerate_all_files(exclude=[]):
             yield root + '/' + f
 
 
-# TODO: ignore excluded dirs when git diffing
 def enumerate_changed_files(exclude=[], diffbase="robojackets/master"):
     p = subprocess.Popen(["git", "diff", "--name-only", diffbase],
                          stdout=subprocess.PIPE)
@@ -31,8 +29,6 @@ def enumerate_changed_files(exclude=[], diffbase="robojackets/master"):
                 if filepath.startswith(excluded_dir):
                     continue
             yield filepath
-
-
 
 
 def main():
@@ -92,7 +88,7 @@ def main():
         if needed_formatting:
             file_change_count += 1
 
-            suffix = "BAD" if ARGS.check else "FIXED"
+            suffix = "✗" if ARGS.check else "✔"
             util.print_justified(filepath, suffix)
         else:
             util.print_justified("> %s: %s" % (ext[1:], filepath),

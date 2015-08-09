@@ -1,6 +1,7 @@
 from stylize.formatter import Formatter
 from stylize.util import file_md5
 
+import os
 import subprocess
 
 
