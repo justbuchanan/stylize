@@ -28,7 +28,7 @@ class ClangFormatter(Formatter):
             popen_args = ["clang-format", "-i"]
             if args.clang_style:
                 popen_args.append("-style=%s" % args.clang_style)
-            args.append(filepath)
+            popen_args.append(filepath)
             proc = subprocess.Popen(popen_args,
                                     stdout=logfile,
                                     stderr=logfile)
