@@ -32,4 +32,6 @@ Usage
 .. _yapf: https://github.com/google/yapf
 
 .. |image0| image:: https://img.shields.io/pypi/v/stylize.svg
+            :target: https://pypi.python.org/pypi/stylize
 .. |image1| image:: https://img.shields.io/pypi/status/stylize.svg
+            :target: https://pypi.python.org/pypi/stylize
