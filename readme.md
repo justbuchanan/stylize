@@ -9,4 +9,3 @@ This package can be installed from PyPi via:
 ~~~{.sh}
 pip3 install stylize
 ~~~
-

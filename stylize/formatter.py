@@ -1,3 +1,5 @@
+## Abstract superclass for all formatters. Each formatter defines a list of
+# relevant file extensions and a run() method for doing the actual work.
 class Formatter:
     def __init__(self):
         self.file_extensions = []
@@ -13,7 +15,6 @@ class Formatter:
     @property
     def file_extensions(self):
         return self._file_extensions
-
     @file_extensions.setter
     def file_extensions(self, value):
         self._file_extensions = value
