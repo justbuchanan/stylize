@@ -4,10 +4,15 @@ class Formatter:
     def __init__(self):
         self.file_extensions = []
 
+    ## Adds any arguments to the given argparse.ArgumentParser object if needed.
+    def add_args(self, argparser):
+        pass
+
     ## Run the formatter on the specified file.
     # @param check If true, run in checkstyle mode and don't modify the file.
+    # @param args The arguments parsed by the ArgumentParser
     # @return True if the file needed/needs formatting
-    def run(self, filepath, check=False):
+    def run(self, args, filepath, check=False):
         raise NotImplementedError("Subclass of Formatter must override run()")
 
     ## A list of file extensions that this formatter is relevant for.  Included

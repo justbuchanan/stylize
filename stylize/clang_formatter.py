@@ -9,16 +9,27 @@ class ClangFormatter(Formatter):
     def __init__(self):
         self.file_extensions = [".c", ".h", ".cpp", ".hpp"]
 
-    def run(self, filepath, check=False):
+    def add_args(self, argparser):
+        argparser.add_argument(
+        "--clang_style",
+        type=str,
+        default=None,
+        help="The style to pass to clang-format.  See `clang-format --help` for more info.")
+
+    def run(self, args, filepath, check=False):
         logfile = open("/dev/null", "w")
         if check:
+            style_arg = "-style=%s" % args.clang_style if args.clang_style != None else ""
             return os.system(
-                "clang-format -style=file -output-replacements-xml %s | grep '<replacement ' > /dev/null 2>&1"
-                % filepath) == 0
+                "clang-format %s -output-replacements-xml %s | grep '<replacement ' > /dev/null 2>&1"
+                % (style_arg, filepath)) == 0
         else:
             md5_before = file_md5(filepath)
-            proc = subprocess.Popen(["clang-format", "-style=file", "-i",
-                                     filepath],
+            popen_args = ["clang-format", "-i"]
+            if args.clang_style:
+                popen_args.append("-style=%s" % args.clang_style)
+            args.append(filepath)
+            proc = subprocess.Popen(popen_args,
                                     stdout=logfile,
                                     stderr=logfile)
             proc.communicate()

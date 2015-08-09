@@ -8,7 +8,7 @@ class YapfFormatter(Formatter):
     def __init__(self):
         self.file_extensions = [".py"]
 
-    def run(self, filepath, check=False):
+    def run(self, args, filepath, check=False):
         logfile = open("/dev/null", "w")
         if check:
             proc = subprocess.Popen(["yapf", "--verify", filepath],

@@ -51,6 +51,18 @@ def main():
     parser.add_argument(
         "--diffbase",
         help="The git branch/tag/SHA1 to compare against.  If provided, only files that have changed since the diffbase will be scanned.")
+
+    formatters = [ClangFormatter(), YapfFormatter()]
+
+    # register any formatter-specific arguments
+    for formatter in formatters: formatter.add_args(parser)
+
+    # map file extension to formatter
+    formatter_map = {}
+    for f in formatters:
+        for ext in f.file_extensions:
+            formatter_map[ext] = f
+
     ARGS = parser.parse_args()
 
     ARGS.exclude_dirs = [os.path.abspath(p) for p in ARGS.exclude_dirs]
@@ -66,23 +78,17 @@ def main():
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
 
 
-    # map file extension to formatter
-    formatters = [ClangFormatter(), YapfFormatter()]
-    formatter_map = {}
-    for f in formatters:
-        for ext in f.file_extensions:
-            formatter_map[ext] = f
-
     def process_file(filepath):
         nonlocal file_scan_count
         nonlocal file_change_count
+        nonlocal ARGS
 
         _, ext = os.path.splitext(filepath)
         if ext not in formatter_map:
             return
         formatter = formatter_map[ext]
 
-        needed_formatting = formatter.run(filepath, ARGS.check)
+        needed_formatting = formatter.run(ARGS, filepath, ARGS.check)
 
         file_scan_count += 1
         if needed_formatting:
