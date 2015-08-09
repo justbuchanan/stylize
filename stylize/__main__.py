@@ -103,6 +103,8 @@ def main():
     if ARGS.check:
         util.print_justified(
             "[%d / %d] files need formatting" % (file_change_count, file_scan_count), "")
+        sys.exit(file_change_count)
     else:
         util.print_justified(
             "[%d / %d] files formatted" % (file_change_count, file_scan_count), "")
+        sys.exit(0)
