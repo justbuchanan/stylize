@@ -50,12 +50,14 @@ def main():
         help="A list of directories to exclude")
     parser.add_argument(
         "--diffbase",
-        help="The git branch/tag/SHA1 to compare against.  If provided, only files that have changed since the diffbase will be scanned.")
+        help=
+        "The git branch/tag/SHA1 to compare against.  If provided, only files that have changed since the diffbase will be scanned.")
 
     formatters = [ClangFormatter(), YapfFormatter()]
 
     # register any formatter-specific arguments
-    for formatter in formatters: formatter.add_args(parser)
+    for formatter in formatters:
+        formatter.add_args(parser)
 
     # map file extension to formatter
     formatter_map = {}
@@ -77,7 +79,6 @@ def main():
         print("%s all c++ and python files in the project..." % verb)
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
 
-
     def process_file(filepath):
         nonlocal file_scan_count
         nonlocal file_change_count
@@ -98,7 +99,8 @@ def main():
             util.print_justified(filepath, suffix)
         else:
             util.print_justified("> %s: %s" % (ext[1:], filepath),
-                                 "[%d]" % file_scan_count, end="\r")
+                                 "[%d]" % file_scan_count,
+                                 end="\r")
 
     # Use all the cores!
     from multiprocessing.pool import ThreadPool
@@ -108,9 +110,11 @@ def main():
     # Print final stats
     if ARGS.check:
         util.print_justified(
-            "[%d / %d] files need formatting" % (file_change_count, file_scan_count), "")
+            "[%d / %d] files need formatting" %
+            (file_change_count, file_scan_count), "")
         sys.exit(file_change_count)
     else:
         util.print_justified(
-            "[%d / %d] files formatted" % (file_change_count, file_scan_count), "")
+            "[%d / %d] files formatted" % (file_change_count, file_scan_count),
+            "")
         sys.exit(0)
