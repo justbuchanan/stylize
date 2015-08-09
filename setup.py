@@ -7,6 +7,7 @@ setup(
     version=stylize.__version__,
     description=
     'A tool for quickly formatting and checkstyling C/C++ and Python code',
+    long_description=open('readme.md', 'r').read(),
     license='Apache License, Version 2.0',
     author='Justin Buchanan',
     author_email='justbuchanan@gmail.com',
