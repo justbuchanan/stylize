@@ -19,7 +19,7 @@ def enumerate_all_files(exclude=[]):
             yield root + '/' + f
 
 
-def enumerate_changed_files(exclude=[], diffbase="robojackets/master"):
+def enumerate_changed_files(exclude=[], diffbase="origin/master"):
     p = subprocess.Popen(["git", "diff", "--name-only", diffbase],
                          stdout=subprocess.PIPE)
     for line in p.stdout:
