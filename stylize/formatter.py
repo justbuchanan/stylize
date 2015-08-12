@@ -20,6 +20,7 @@ class Formatter:
     @property
     def file_extensions(self):
         return self._file_extensions
+
     @file_extensions.setter
     def file_extensions(self, value):
         self._file_extensions = value

@@ -14,12 +14,11 @@ setup(
     maintainer='Justin Buchanan',
     maintainer_email='justbuchanan@gmail.com',
     url='https://github.com/justbuchanan/stylize',
-    classifiers=
-    ['Development Status :: 3 - Alpha',
-     'Environment :: Console',
-     'Intended Audience :: Developers',
-     'Programming Language :: Python :: 3',
-     'Programming Language :: Python :: 3.4',
-     'Topic :: Software Development :: Quality Assurance', ],
+    classifiers=['Development Status :: 3 - Alpha',
+                 'Environment :: Console',
+                 'Intended Audience :: Developers',
+                 'Programming Language :: Python :: 3',
+                 'Programming Language :: Python :: 3.4',
+                 'Topic :: Software Development :: Quality Assurance', ],
     entry_points={'console_scripts': ['stylize = stylize.__main__:main'], },
     install_requires=['yapf'], )

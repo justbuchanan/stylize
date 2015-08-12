@@ -11,10 +11,11 @@ class ClangFormatter(Formatter):
 
     def add_args(self, argparser):
         argparser.add_argument(
-        "--clang_style",
-        type=str,
-        default=None,
-        help="The style to pass to clang-format.  See `clang-format --help` for more info.")
+            "--clang_style",
+            type=str,
+            default=None,
+            help=
+            "The style to pass to clang-format.  See `clang-format --help` for more info.")
 
     def run(self, args, filepath, check=False):
         logfile = open("/dev/null", "w")
@@ -29,9 +30,7 @@ class ClangFormatter(Formatter):
             if args.clang_style:
                 popen_args.append("-style=%s" % args.clang_style)
             popen_args.append(filepath)
-            proc = subprocess.Popen(popen_args,
-                                    stdout=logfile,
-                                    stderr=logfile)
+            proc = subprocess.Popen(popen_args, stdout=logfile, stderr=logfile)
             proc.communicate()
             md5_after = file_md5(filepath)
             return md5_before != md5_after
