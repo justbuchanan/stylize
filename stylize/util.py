@@ -18,8 +18,8 @@ def get_terminal_width():
                                            '1234'))[1]
 
 
-## Print a left-justified string and a right-justified string by inserting the
+## Print a left-aligned string and a right-aligned string by inserting the
 # right amount of spaces in-between.
-def print_justified(left, right, **print_args):
+def print_aligned(left, right, **print_args):
     spaces = " " * (get_terminal_width() - len(left) - len(right))
     print(left + spaces + right, **print_args)

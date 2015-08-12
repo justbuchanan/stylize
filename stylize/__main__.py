@@ -96,9 +96,9 @@ def main():
             file_change_count += 1
 
             suffix = "✗" if ARGS.check else "✔"
-            util.print_justified(filepath, suffix)
+            util.print_aligned(filepath, suffix)
         else:
-            util.print_justified("> %s: %s" % (ext[1:], filepath),
+            util.print_aligned("> %s: %s" % (ext[1:], filepath),
                                  "[%d]" % file_scan_count,
                                  end="\r")
 
@@ -109,12 +109,12 @@ def main():
 
     # Print final stats
     if ARGS.check:
-        util.print_justified(
+        util.print_aligned(
             "[%d / %d] files need formatting" %
             (file_change_count, file_scan_count), "")
         sys.exit(file_change_count)
     else:
-        util.print_justified(
+        util.print_aligned(
             "[%d / %d] files formatted" % (file_change_count, file_scan_count),
             "")
         sys.exit(0)
