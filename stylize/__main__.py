@@ -58,7 +58,8 @@ def main():
     # register any formatter-specific arguments
     for formatter in formatters:
         if formatter.get_command() == None:
-            print("[ERR] A required dependency was not found. Check to see if clang-format is available on your path.")
+            print(
+                "[ERR] A required dependency was not found. Check to see if clang-format is available on your path.")
             exit(1)
         formatter.add_args(parser)
 
@@ -102,8 +103,8 @@ def main():
             util.print_aligned(filepath, suffix)
         else:
             util.print_aligned("> %s: %s" % (ext[1:], filepath),
-                                 "[%d]" % file_scan_count,
-                                 end="\r")
+                               "[%d]" % file_scan_count,
+                               end="\r")
 
     # Use all the cores!
     from multiprocessing.pool import ThreadPool
