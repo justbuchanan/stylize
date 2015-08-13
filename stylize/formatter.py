@@ -15,6 +15,11 @@ class Formatter:
     def run(self, args, filepath, check=False):
         raise NotImplementedError("Subclass of Formatter must override run()")
 
+    ## Checks if requirements are fullfilled and returns the command to use if they are
+    # @return None if the required command is not found and the command to use by this formatter if found.
+    def get_command(self):
+        return None
+
     ## A list of file extensions that this formatter is relevant for.  Included
     # the dot.
     @property

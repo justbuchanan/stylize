@@ -57,6 +57,9 @@ def main():
 
     # register any formatter-specific arguments
     for formatter in formatters:
+        if formatter.get_command() == None:
+            print("[ERR] A required dependency was not found. Check to see if clang-format is available on your path.")
+            exit(1)
         formatter.add_args(parser)
 
     # map file extension to formatter
