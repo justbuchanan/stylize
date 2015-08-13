@@ -2,6 +2,7 @@ from stylize.formatter import Formatter
 from stylize.util import file_md5
 
 import subprocess
+import shutil
 
 
 class YapfFormatter(Formatter):
@@ -24,3 +25,6 @@ class YapfFormatter(Formatter):
             proc.communicate()
             md5_after = file_md5(filepath)
             return md5_before != md5_after
+
+    def get_command(self):
+        return shutil.which("yapf")
