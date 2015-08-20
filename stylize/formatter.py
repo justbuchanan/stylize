@@ -3,10 +3,17 @@
 class Formatter:
     def __init__(self):
         self.file_extensions = []
+        self._config_file_name = None
 
     ## Adds any arguments to the given argparse.ArgumentParser object if needed.
     def add_args(self, argparser):
         pass
+
+    ## The name of the config file used by this formatter - assumed to be at the
+    # root of the project.
+    @property
+    def config_file_name(self):
+        return self._config_file_name
 
     ## Run the formatter on the specified file.
     # @param check If true, run in checkstyle mode and don't modify the file.

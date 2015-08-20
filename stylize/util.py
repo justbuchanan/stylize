@@ -1,5 +1,6 @@
 import fcntl
 import hashlib
+import os
 import struct
 import sys
 import termios
@@ -15,6 +16,11 @@ def file_md5(filepath):
 
 def bytes_md5(bytes):
     return hashlib.md5(bytes).hexdigest()
+
+
+def file_ext(filepath):
+    _, ext = os.path.splitext(filepath)
+    return ext
 
 
 def get_terminal_width():

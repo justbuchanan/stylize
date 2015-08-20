@@ -9,6 +9,7 @@ import shutil
 class ClangFormatter(Formatter):
     def __init__(self):
         self.clang_command = self.get_command()
+        self._config_file_name = ".clang-format"
         self.file_extensions = [".c", ".h", ".cpp", ".hpp"]
 
     def add_args(self, argparser):

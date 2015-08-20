@@ -1,14 +1,15 @@
-from stylize import util
+from stylize.util import print_aligned, file_ext
 from stylize.clang_formatter import ClangFormatter
 from stylize.yapf_formatter import YapfFormatter
 
+from itertools import chain
 import argparse
 import fcntl
+import os
 import struct
 import subprocess
 import sys
 import termios
-import os
 
 
 def enumerate_all_files(exclude=[]):
@@ -64,10 +65,10 @@ def main():
         formatter.add_args(parser)
 
     # map file extension to formatter
-    formatter_map = {}
+    formatters_by_ext = {}
     for f in formatters:
         for ext in f.file_extensions:
-            formatter_map[ext] = f
+            formatters_by_ext[ext] = f
 
     ARGS = parser.parse_args()
 
@@ -76,9 +77,34 @@ def main():
     # Print initial status info
     verb = "Checkstyling" if ARGS.check else "Formatting"
     if ARGS.diffbase:
+        # A diffbase was given, so we run a git diff to see which files have
+        # changed relative to the diffbase and only reformat those.  If a
+        # formatter's config file has changed, we add all relevant files to the
+        # list to format/checkstyle.
+
         print("%s files that differ from %s..." % (verb, ARGS.diffbase))
-        files_to_format = enumerate_changed_files(ARGS.exclude_dirs,
-                                                  ARGS.diffbase)
+
+        changed_files = list(enumerate_changed_files(ARGS.exclude_dirs,
+                                                        ARGS.diffbase))
+
+        files_to_format = changed_files
+
+        # Build a set of file extensions for which the config file has been modified.
+        exts_requiring_full_reformat = set()
+        for formatter in formatters:
+            if formatter.config_file_name in changed_files:
+                print(
+                    "Config file '%s' changed.  %s all files with extensions: %s"
+                    % (formatter.config_file_name, verb, str(
+                        formatter.file_extensions)))
+                exts_requiring_full_reformat |= set(formatter.file_extensions)
+
+        if len(exts_requiring_full_reformat) > 0:
+            files_with_relevant_extensions = filter(
+                lambda file: file_ext(file) in exts_requiring_full_reformat,
+                enumerate_all_files())
+            files_to_format = chain(changed_files,
+                                    files_with_relevant_extensions)
     else:
         print("%s all c++ and python files in the project..." % verb)
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
@@ -88,10 +114,9 @@ def main():
         nonlocal file_change_count
         nonlocal ARGS
 
-        _, ext = os.path.splitext(filepath)
-        if ext not in formatter_map:
+        if file_ext(filepath) not in formatters_by_ext:
             return
-        formatter = formatter_map[ext]
+        formatter = formatters_by_ext[ext]
 
         needed_formatting = formatter.run(ARGS, filepath, ARGS.check)
 
@@ -100,9 +125,9 @@ def main():
             file_change_count += 1
 
             suffix = "✗" if ARGS.check else "✔"
-            util.print_aligned(filepath, suffix)
+            print_aligned(filepath, suffix)
         else:
-            util.print_aligned("> %s: %s" % (ext[1:], filepath),
+            print_aligned("> %s: %s" % (ext[1:], filepath),
                                "[%d]" % file_scan_count,
                                end="\r")
 
@@ -113,12 +138,18 @@ def main():
 
     # Print final stats
     if ARGS.check:
-        util.print_aligned(
+        print_aligned(
             "[%d / %d] files need formatting" %
             (file_change_count, file_scan_count), "")
         sys.exit(file_change_count)
     else:
-        util.print_aligned(
+        print_aligned(
             "[%d / %d] files formatted" % (file_change_count, file_scan_count),
             "")
         sys.exit(0)
+
+
+
+if __name__ == '__main__':
+    main()
+

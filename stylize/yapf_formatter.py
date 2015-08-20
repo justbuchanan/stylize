@@ -8,6 +8,7 @@ import shutil
 class YapfFormatter(Formatter):
     def __init__(self):
         self.file_extensions = [".py"]
+        self._config_file_name = ".style.yapf"
 
     def run(self, args, filepath, check=False):
         logfile = open("/dev/null", "w")
