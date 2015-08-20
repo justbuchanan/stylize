@@ -1,5 +1,5 @@
 from stylize.formatter import Formatter
-from stylize.util import file_md5
+from stylize.util import file_md5, bytes_md5
 
 import subprocess
 import shutil
@@ -11,14 +11,14 @@ class YapfFormatter(Formatter):
 
     def run(self, args, filepath, check=False):
         logfile = open("/dev/null", "w")
+        md5_before = file_md5(filepath)
         if check:
             proc = subprocess.Popen(["yapf", "--verify", filepath],
-                                    stdout=logfile,
+                                    stdout=subprocess.PIPE,
                                     stderr=logfile)
-            proc.communicate()
-            return proc.returncode == 1
+            out, err = proc.communicate()
+            return md5_before != bytes_md5(out)
         else:
-            md5_before = file_md5(filepath)
             proc = subprocess.Popen(["yapf", "-i", filepath],
                                     stdout=logfile,
                                     stderr=logfile)

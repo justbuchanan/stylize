@@ -13,6 +13,10 @@ def file_md5(filepath):
             print("ERROR encoding file: %s" % filepath)
 
 
+def bytes_md5(bytes):
+    return hashlib.md5(bytes).hexdigest()
+
+
 def get_terminal_width():
     return struct.unpack('hh', fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ,
                                            '1234'))[1]
