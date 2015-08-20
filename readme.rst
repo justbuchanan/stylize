@@ -1,4 +1,4 @@
-Stylize
+Stylize !image2|
 =======
 
 |image0| |image1|
@@ -35,3 +35,5 @@ Usage
             :target: https://pypi.python.org/pypi/stylize
 .. |image1| image:: https://img.shields.io/pypi/status/stylize.svg
             :target: https://pypi.python.org/pypi/stylize
+.. |image2| image:: https://circleci.com/gh/justbuchanan/stylize.png
+            :target: https://circleci.com/gh/justbuchanan/stylize
