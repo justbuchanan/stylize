@@ -14,11 +14,11 @@ class YapfFormatter(Formatter):
         logfile = open("/dev/null", "w")
         md5_before = file_md5(filepath)
         if check:
-            proc = subprocess.Popen(["yapf", "--verify", filepath],
+            proc = subprocess.Popen(["yapf", "--verify", "--diff", filepath],
                                     stdout=subprocess.PIPE,
                                     stderr=logfile)
             out, err = proc.communicate()
-            return md5_before != bytes_md5(out)
+            return len(out) > 0
         else:
             proc = subprocess.Popen(["yapf", "-i", filepath],
                                     stdout=logfile,
