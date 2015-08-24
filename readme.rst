@@ -1,4 +1,4 @@
-Stylize !image2|
+Stylize |image2|
 =======
 
 |image0| |image1|
