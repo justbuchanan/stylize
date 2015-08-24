@@ -13,5 +13,5 @@ dependencies:
 
 test:
     override:
-        - nosetests
+        - python3 setup.py test
         - stylize --check
