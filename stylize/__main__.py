@@ -22,7 +22,10 @@ def enumerate_all_files(exclude=[]):
 
 ## Yields all files that differ from @diffbase or are not tracked by git.
 def enumerate_changed_files(exclude=[], diffbase="origin/master"):
-    out = subprocess.check_output("git diff --name-only %s; git ls-files --others --exclude-standard" % diffbase, shell=True)
+    out = subprocess.check_output(
+        "git diff --name-only %s; git ls-files --others --exclude-standard" %
+        diffbase,
+        shell=True)
     for line in out.decode("utf-8").splitlines():
         filepath = line.rstrip()
         if os.path.exists(filepath):
@@ -67,10 +70,10 @@ def main():
         for ext in formatter.file_extensions:
             formatters_by_ext[ext] = formatter
 
-
     ARGS = parser.parse_args()
 
-    ARGS.exclude_dirs = [os.path.abspath(p) for p in ARGS.exclude_dirs] + [os.path.abspath('.git')]
+    ARGS.exclude_dirs = [os.path.abspath(p) for p in ARGS.exclude_dirs
+                         ] + [os.path.abspath('.git')]
 
     # Print initial status info
     verb = "Checkstyling" if ARGS.check else "Formatting"
@@ -83,7 +86,7 @@ def main():
         print("%s files that differ from %s..." % (verb, ARGS.diffbase))
 
         changed_files = list(enumerate_changed_files(ARGS.exclude_dirs,
-                                                        ARGS.diffbase))
+                                                     ARGS.diffbase))
 
         files_to_format = changed_files
 
@@ -127,8 +130,8 @@ def main():
             print_aligned(filepath, suffix)
         else:
             print_aligned("> %s: %s" % (ext[1:], filepath),
-                               "[%d]" % file_scan_count,
-                               end="\r")
+                          "[%d]" % file_scan_count,
+                          end="\r")
 
     # Use all the cores!
     from multiprocessing.pool import ThreadPool
@@ -148,7 +151,5 @@ def main():
         sys.exit(0)
 
 
-
 if __name__ == '__main__':
     main()
-

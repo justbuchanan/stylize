@@ -6,12 +6,10 @@ import stylize.util as util
 import tempfile
 import unittest
 
-
-
-BAD_CPP=b"int main() {\n\n\n\n}"
-GOOD_CPP=b"int main() {}"
-BAD_PY=b"a = 1+1"
-GOOD_PY=b"a = 1 + 1\n"
+BAD_CPP = b"int main() {\n\n\n\n}"
+GOOD_CPP = b"int main() {}"
+BAD_PY = b"a = 1+1"
+GOOD_PY = b"a = 1 + 1\n"
 
 
 ## Test fixture that sets up a temporary directory and provides some basic
@@ -36,7 +34,12 @@ class Fixture(unittest.TestCase):
         osenv = os.environ.copy()
         osenv["PYTHONPATH"] = os.path.dirname(__file__) + "/../"
         logfile = open(self.tempdir + "/test-log.txt", 'w')
-        p = subprocess.Popen(cmd, shell=True, cwd=self.tempdir, env=osenv, stdout=logfile, stderr=logfile)
+        p = subprocess.Popen(cmd,
+                             shell=True,
+                             cwd=self.tempdir,
+                             env=osenv,
+                             stdout=logfile,
+                             stderr=logfile)
         p.communicate()
         logfile.close()
 
@@ -78,8 +81,8 @@ class TestDiffbase(Fixture):
         self.run_cmd("git commit -m 'added poorly-formatted cpp file'")
         self.write_file('bad2.cpp', BAD_CPP)
 
-        self.run_cmd("python3 -m stylize --clang_style=Google --diffbase=master")
+        self.run_cmd(
+            "python3 -m stylize --clang_style=Google --diffbase=master")
 
         self.assertTrue(self.file_changed('bad2.cpp', BAD_CPP))
         self.assertFalse(self.file_changed('bad1.cpp', BAD_CPP))
-
