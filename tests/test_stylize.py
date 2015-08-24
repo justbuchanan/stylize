@@ -21,7 +21,7 @@ class TestStylize(unittest.TestCase):
 
 
     ## Add one bad cpp file and one good one, then ensure that only the bad one
-    # is reformatted
+    # is reformatted.
     def test_cpp_formatting(self):
         env = TestStylize.fresh_test_env()
         env.writefile('bad.cpp', TestStylize.BAD_CPP)
@@ -34,7 +34,7 @@ class TestStylize(unittest.TestCase):
 
 
     ## Add one bad py file and one good one, then ensure that only the bad one
-    # is reformatted
+    # is reformatted.
     def test_py_formatting(self):
         env = TestStylize.fresh_test_env()
         env.writefile('bad.py', TestStylize.BAD_PY)
