@@ -4,7 +4,7 @@ machine:
 
 dependencies:
     post:
-        - pip3 install setuptools
+        - pip3 install setuptools nosetests
         - sudo wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
         - sudo add-apt-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.5 main"
         - sudo apt-get update
@@ -13,4 +13,5 @@ dependencies:
 
 test:
     override:
+        - nosetests
         - stylize --check
