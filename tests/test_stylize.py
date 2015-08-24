@@ -104,4 +104,3 @@ class TestDiffbase(Fixture):
         self.run_cmd(
             "python3 -m stylize --clang_style=Google --diffbase=master")
         self.assertTrue(self.file_changed('bad1.cpp', BAD_CPP))
-
