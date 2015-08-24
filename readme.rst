@@ -1,4 +1,4 @@
-Stylize |image2|
+Stylize |image2| |coverage_button|
 ================
 
 |image0| |image1|
@@ -37,3 +37,5 @@ Usage
             :target: https://pypi.python.org/pypi/stylize
 .. |image2| image:: https://circleci.com/gh/justbuchanan/stylize.png
             :target: https://circleci.com/gh/justbuchanan/stylize
+.. |coverage_button| image:: https://coveralls.io/repos/justbuchanan/stylize/badge.svg?branch=master&service=github
+  :target: https://coveralls.io/github/justbuchanan/stylize?branch=master

@@ -23,4 +23,4 @@ setup(
     entry_points={'console_scripts': ['stylize = stylize.__main__:main'], },
     install_requires=['yapf'],
     test_suite='nose.collector',
-    tests_require=['nose'], )
+    tests_require=['nose', 'coverage'], )

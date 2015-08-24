@@ -13,8 +13,11 @@ dependencies:
         - sudo add-apt-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.5 main"
         - sudo apt-get update
         - sudo apt-get install clang-format-3.5
+        - pip3 install coveralls
 
 test:
     override:
-        - python3 setup.py test
+        # Run unit tests and upload code coverage to coveralls.io
+        - nosetests --with-coverage
+        - coveralls
         - stylize --check
