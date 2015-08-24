@@ -35,7 +35,7 @@ Usage
             :target: https://pypi.python.org/pypi/stylize
 .. |pypi_status| image:: https://img.shields.io/pypi/status/stylize.svg
             :target: https://pypi.python.org/pypi/stylize
-.. |circleci_button| image:: https://circleci.com/gh/justbuchanan/stylize.png
+.. |circleci_button| image:: https://circleci.com/gh/justbuchanan/stylize.svg?style=shield
             :target: https://circleci.com/gh/justbuchanan/stylize
 .. |coverage_button| image:: https://coveralls.io/repos/justbuchanan/stylize/badge.svg?branch=master&service=github
   :target: https://coveralls.io/github/justbuchanan/stylize?branch=master
