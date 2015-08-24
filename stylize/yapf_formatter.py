@@ -22,7 +22,7 @@ class YapfFormatter(Formatter):
     def run(self, args, filepath, check=False):
         logfile = open("/dev/null", "w")
         md5_before = file_md5(filepath)
-        style_arg = "-style=%s" % (args.yapf_style if args.yapf_style != None else "pep8")
+        style_arg = "--style=%s" % (args.yapf_style if args.yapf_style != None else "pep8")
         if check:
             proc = subprocess.Popen(["yapf", "--verify", "--diff", style_arg, filepath],
                                     stdout=subprocess.PIPE,
