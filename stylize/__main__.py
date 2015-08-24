@@ -20,11 +20,11 @@ def enumerate_all_files(exclude=[]):
             yield root + '/' + f
 
 
+## Yields all files that differ from @diffbase or are not tracked by git.
 def enumerate_changed_files(exclude=[], diffbase="origin/master"):
-    p = subprocess.Popen(["git", "diff", "--name-only", diffbase],
-                         stdout=subprocess.PIPE)
-    for line in p.stdout:
-        filepath = line.rstrip().decode("utf-8")
+    out = subprocess.check_output("git diff --name-only %s; git ls-files --others --exclude-standard" % diffbase, shell=True)
+    for line in out.decode("utf-8").splitlines():
+        filepath = line.rstrip()
         if os.path.exists(filepath):
             for excluded_dir in exclude:
                 if filepath.startswith(excluded_dir):

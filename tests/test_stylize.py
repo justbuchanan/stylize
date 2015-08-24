@@ -1,64 +1,85 @@
-import unittest
-import stylize.__main__ as stylize_main
-from scripttest import TestFileEnvironment
-import tempfile
+from nose.tools import nottest
 import os
+import subprocess
+import stylize.__main__ as stylize_main
+import stylize.util as util
+import tempfile
+import unittest
 
 
-class TestStylize(unittest.TestCase):
-    BAD_CPP=b"int main() {\n\n\n\n}"
-    GOOD_CPP=b"int main() {}"
-    BAD_PY=b"a = 1+1"
-    GOOD_PY=b"a = 1 + 1\n"
+
+BAD_CPP=b"int main() {\n\n\n\n}"
+GOOD_CPP=b"int main() {}"
+BAD_PY=b"a = 1+1"
+GOOD_PY=b"a = 1 + 1\n"
 
 
-    @classmethod
-    def fresh_test_env(cls):
+## Test fixture that sets up a temporary directory and provides some basic
+# methods that we need for our tests.
+class Fixture(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        self.tempdir = tempfile.mkdtemp()
+        super(Fixture, self).__init__(*args, **kwargs)
+
+    @nottest
+    def file_changed(self, filename, prev_contents):
+        filepath = self.tempdir + "/" + filename
+        return util.file_md5(filepath) != util.bytes_md5(prev_contents)
+
+    @nottest
+    def write_file(self, filename, contents):
+        with open(self.tempdir + "/" + filename, 'wb') as f:
+            f.write(contents)
+
+    @nottest
+    def run_cmd(self, cmd):
         osenv = os.environ.copy()
         osenv["PYTHONPATH"] = os.path.dirname(__file__) + "/../"
-        env = TestFileEnvironment(tempfile.mkdtemp() + "/test", environ=osenv)
-        return env
+        logfile = open(self.tempdir + "/test-log.txt", 'w')
+        p = subprocess.Popen(cmd, shell=True, cwd=self.tempdir, env=osenv, stdout=logfile, stderr=logfile)
+        p.communicate()
+        logfile.close()
 
 
-    ## Add one bad cpp file and one good one, then ensure that only the bad one
-    # is reformatted.
-    def test_cpp_formatting(self):
-        env = TestStylize.fresh_test_env()
-        env.writefile('bad.cpp', TestStylize.BAD_CPP)
-        env.writefile('good.cpp', TestStylize.GOOD_CPP)
+## Add one bad cpp file and one good one, then ensure that only the bad one
+# is reformatted.
+class TestFormatCpp(Fixture):
+    def test_format_cpp(self):
+        self.write_file('bad.cpp', BAD_CPP)
+        self.write_file('good.cpp', GOOD_CPP)
 
-        result = env.run("python3", "-m", "stylize", "--clang_style=Google")
+        self.run_cmd("python3 -m stylize --clang_style=Google")
 
-        self.assertTrue('bad.cpp' in result.files_updated)
-        self.assertFalse('good.cpp' in result.files_updated)
-
-
-    ## Add one bad py file and one good one, then ensure that only the bad one
-    # is reformatted.
-    def test_py_formatting(self):
-        env = TestStylize.fresh_test_env()
-        env.writefile('bad.py', TestStylize.BAD_PY)
-        env.writefile('good.py', TestStylize.GOOD_PY)
-
-        result = env.run("python3", "-m", "stylize", "--clang_style=Google")
-
-        self.assertTrue('bad.py' in result.files_updated)
-        self.assertFalse('good.py' in result.files_updated)
+        self.assertTrue(self.file_changed('bad.cpp', BAD_CPP))
+        self.assertFalse(self.file_changed('good.cpp', GOOD_CPP))
 
 
-    ## Commit a bad cpp file to the master branch, then add another bad one.
-    # Ensure that the committed one is not reformatted when we give stylize
-    # the --diffbase=master option.
+## Add one bad py file and one good one, then ensure that only the bad one
+# is reformatted.
+class TestFormatPy(Fixture):
+    def test_format_py(self):
+        self.write_file('bad.py', BAD_PY)
+        self.write_file('good.py', GOOD_PY)
+
+        self.run_cmd("python3 -m stylize --clang_style=Google")
+
+        self.assertTrue(self.file_changed('bad.py', BAD_PY))
+        self.assertFalse(self.file_changed('good.py', GOOD_PY))
+
+
+## Commit a bad cpp file to the master branch, then add another bad one.
+# Ensure that the committed one is not reformatted when we give stylize
+# the --diffbase=master option.
+class TestDiffbase(Fixture):
     def test_diffbase(self):
-        env = TestStylize.fresh_test_env()
-        env.writefile('bad1.cpp', TestStylize.BAD_CPP)
-        env.run("git init")
-        env.run("git add bad1.cpp")
-        env.run("git commit -m 'added poorly-formatted cpp file'")
-        env.writefile('bad2.cpp', TestStylize.BAD_CPP)
+        self.run_cmd("git init")
+        self.write_file('bad1.cpp', BAD_CPP)
+        self.run_cmd("git add bad1.cpp")
+        self.run_cmd("git commit -m 'added poorly-formatted cpp file'")
+        self.write_file('bad2.cpp', BAD_CPP)
 
-        result = env.run("python3", "-m", "stylize", "--clang_style=Google --diffbase=master")
+        self.run_cmd("python3 -m stylize --clang_style=Google --diffbase=master")
 
-        self.assertTrue('bad2.cpp' in result.files_updated)
-        self.assertFalse('bad1.cpp' in result.files_updated)
+        self.assertTrue(self.file_changed('bad2.cpp', BAD_CPP))
+        self.assertFalse(self.file_changed('bad1.cpp', BAD_CPP))
 
