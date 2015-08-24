@@ -57,22 +57,20 @@ def main():
     formatters = [ClangFormatter(), YapfFormatter()]
 
     # register any formatter-specific arguments
+    formatters_by_ext = {}
     for formatter in formatters:
         if formatter.get_command() == None:
             print(
                 "[ERR] A required dependency was not found. Check to see if clang-format is available on your path.")
             exit(1)
         formatter.add_args(parser)
+        for ext in formatter.file_extensions:
+            formatters_by_ext[ext] = formatter
 
-    # map file extension to formatter
-    formatters_by_ext = {}
-    for f in formatters:
-        for ext in f.file_extensions:
-            formatters_by_ext[ext] = f
 
     ARGS = parser.parse_args()
 
-    ARGS.exclude_dirs = [os.path.abspath(p) for p in ARGS.exclude_dirs]
+    ARGS.exclude_dirs = [os.path.abspath(p) for p in ARGS.exclude_dirs] + [os.path.abspath('.git')]
 
     # Print initial status info
     verb = "Checkstyling" if ARGS.check else "Formatting"
@@ -114,7 +112,8 @@ def main():
         nonlocal file_change_count
         nonlocal ARGS
 
-        if file_ext(filepath) not in formatters_by_ext:
+        ext = file_ext(filepath)
+        if ext not in formatters_by_ext:
             return
         formatter = formatters_by_ext[ext]
 

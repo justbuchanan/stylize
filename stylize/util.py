@@ -24,8 +24,11 @@ def file_ext(filepath):
 
 
 def get_terminal_width():
-    return struct.unpack('hh', fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ,
-                                           '1234'))[1]
+    try:
+        return struct.unpack('hh', fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ,
+                                               '1234'))[1]
+    except OSError as e:
+        return 80
 
 
 ## Print a left-aligned string and a right-aligned string by inserting the
