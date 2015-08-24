@@ -42,6 +42,7 @@ class Fixture(unittest.TestCase):
                              stderr=logfile)
         p.communicate()
         logfile.close()
+        return p.returncode
 
 
 ## Add one bad cpp file and one good one, then ensure that only the bad one
@@ -51,8 +52,11 @@ class TestFormatCpp(Fixture):
         self.write_file('bad.cpp', BAD_CPP)
         self.write_file('good.cpp', GOOD_CPP)
 
+        self.assertNotEqual(0, self.run_cmd("python3 -m stylize --clang_style=Google --check"))
+
         self.run_cmd("python3 -m stylize --clang_style=Google")
 
+        self.assertEqual(0, self.run_cmd("python3 -m stylize --clang_style=Google --check"))
         self.assertTrue(self.file_changed('bad.cpp', BAD_CPP))
         self.assertFalse(self.file_changed('good.cpp', GOOD_CPP))
 
@@ -64,8 +68,11 @@ class TestFormatPy(Fixture):
         self.write_file('bad.py', BAD_PY)
         self.write_file('good.py', GOOD_PY)
 
-        self.run_cmd("python3 -m stylize --clang_style=Google")
+        self.assertNotEqual(0, self.run_cmd("python3 -m stylize --check"))
 
+        self.run_cmd("python3 -m stylize")
+
+        self.assertEqual(0, self.run_cmd("python3 -m stylize --check"))
         self.assertTrue(self.file_changed('bad.py', BAD_PY))
         self.assertFalse(self.file_changed('good.py', GOOD_PY))
 
