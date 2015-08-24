@@ -10,6 +10,7 @@ BAD_CPP = b"int main() {\n\n\n\n}"
 GOOD_CPP = b"int main() {}"
 BAD_PY = b"a = 1+1"
 GOOD_PY = b"a = 1 + 1\n"
+EXAMPLE_CLANG_FORMAT = b"---\nBasedOnStyle: Google"
 
 
 ## Test fixture that sets up a temporary directory and provides some basic
@@ -95,3 +96,12 @@ class TestDiffbase(Fixture):
 
         self.assertTrue(self.file_changed('bad2.cpp', BAD_CPP))
         self.assertFalse(self.file_changed('bad1.cpp', BAD_CPP))
+
+        # When the config file changes and we're using the --diffbase option,
+        # all files with the extensions related to that config should be
+        # formatted.
+        self.write_file('.clang-format', EXAMPLE_CLANG_FORMAT)
+        self.run_cmd(
+            "python3 -m stylize --clang_style=Google --diffbase=master")
+        self.assertTrue(self.file_changed('bad1.cpp', BAD_CPP))
+
