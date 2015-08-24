@@ -1,7 +1,7 @@
-Stylize |image2| |coverage_button|
+Stylize |circleci_button| |coverage_button|
 ================
 
-|image0| |image1|
+|pypi_version| |pypi_status|
 
 Stylize is a command line interface for quickly reformatting a C++ or
 Python codebase. It’s a wrapper for `clang-format`_ and `yapf`_.
@@ -31,11 +31,11 @@ Usage
 .. _clang-format: http://clang.llvm.org/docs/ClangFormat.html
 .. _yapf: https://github.com/google/yapf
 
-.. |image0| image:: https://img.shields.io/pypi/v/stylize.svg
+.. |pypi_version| image:: https://img.shields.io/pypi/v/stylize.svg
             :target: https://pypi.python.org/pypi/stylize
-.. |image1| image:: https://img.shields.io/pypi/status/stylize.svg
+.. |pypi_status| image:: https://img.shields.io/pypi/status/stylize.svg
             :target: https://pypi.python.org/pypi/stylize
-.. |image2| image:: https://circleci.com/gh/justbuchanan/stylize.png
+.. |circleci_button| image:: https://circleci.com/gh/justbuchanan/stylize.png
             :target: https://circleci.com/gh/justbuchanan/stylize
 .. |coverage_button| image:: https://coveralls.io/repos/justbuchanan/stylize/badge.svg?branch=master&service=github
   :target: https://coveralls.io/github/justbuchanan/stylize?branch=master
