@@ -3,6 +3,11 @@ machine:
         version: 3.4.2
 
 dependencies:
+    # Remove cached python environment.  When using the cache, there were issues
+    # running `setup.py install` - it kept hitting an error:
+    # AttributeError: _Distribution__dep_map
+    pre:
+        - rm -r /home/ubuntu/virtualenvs
     post:
         - sudo wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
         - sudo add-apt-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.5 main"
