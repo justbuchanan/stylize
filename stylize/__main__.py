@@ -65,7 +65,7 @@ def main():
         if formatter.get_command() == None:
             print(
                 "[ERR] A required dependency was not found. Check to see if clang-format is available on your path.")
-            exit(1)
+            return 1
         formatter.add_args(parser)
         for ext in formatter.file_extensions:
             formatters_by_ext[ext] = formatter
@@ -143,13 +143,13 @@ def main():
         print_aligned(
             "[%d / %d] files need formatting" %
             (file_change_count, file_scan_count), "")
-        sys.exit(file_change_count)
+        return file_change_count
     else:
         print_aligned(
             "[%d / %d] files formatted" % (file_change_count, file_scan_count),
             "")
-        sys.exit(0)
+        return 0
 
 
 if __name__ == '__main__':
-    main()
+    exit(main())
