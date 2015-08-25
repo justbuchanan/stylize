@@ -7,6 +7,7 @@ import shutil
 
 class YapfFormatter(Formatter):
     def __init__(self):
+        super().__init__()
         self.file_extensions = [".py"]
         self._config_file_name = ".style.yapf"
 
