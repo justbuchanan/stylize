@@ -8,6 +8,7 @@ import fcntl
 import os
 import struct
 import subprocess
+from multiprocessing.pool import ThreadPool
 import sys
 import termios
 
@@ -134,7 +135,6 @@ def main():
                           end="\r")
 
     # Use all the cores!
-    from multiprocessing.pool import ThreadPool
     workers = ThreadPool()
     workers.map(process_file, files_to_format)
 

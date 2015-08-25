@@ -18,6 +18,6 @@ dependencies:
 test:
     override:
         # Run unit tests and upload code coverage to coveralls.io
-        - nosetests --with-coverage
+        - coverage run --include="./stylize/*" -m nose
         - coveralls
         - stylize --check
