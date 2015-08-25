@@ -1,9 +1,7 @@
-Stylize |circleci_button| |coverage_button|
+Stylize |pypi_version| |circleci_button| |coverage_button|
 ================
 
-|pypi_version| |pypi_status|
-
-Stylize is a command line interface for quickly reformatting a C++ or
+Stylize is a command line tool for quickly reformatting a C++ or
 Python codebase. It’s a wrapper for `clang-format`_ and `yapf`_.
 
 Install
