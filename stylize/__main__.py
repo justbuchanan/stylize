@@ -29,11 +29,10 @@ def enumerate_changed_files(exclude=[], diffbase="origin/master"):
         shell=True)
     for line in out.decode("utf-8").splitlines():
         filepath = line.rstrip()
+        abspath = os.path.abspath(filepath)
         if os.path.exists(filepath):
-            for excluded_dir in exclude:
-                if filepath.startswith(excluded_dir):
-                    continue
-            yield filepath
+            if not any(abspath.startswith(excluded_dir) for excluded_dir in exclude):
+                yield filepath
 
 
 def main():
