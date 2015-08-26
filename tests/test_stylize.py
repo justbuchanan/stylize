@@ -103,3 +103,20 @@ class TestDiffbase(Fixture):
         self.write_file('.clang-format', EXAMPLE_CLANG_FORMAT)
         self.run_stylize(["--clang_style=file", "--diffbase=master"])
         self.assertTrue(self.file_changed('bad1.cpp', BAD_CPP))
+
+
+## Test to ensure that stylize respects the "--exclude_dirs" option when it's
+# also given the --diffbase option.
+class TestDiffbaseExclude(Fixture):
+    def test_diffbase_exclude(self):
+        self.run_cmd("git init")
+        self.run_cmd("mkdir dir1")
+        self.write_file('dir1/bad1.cpp', BAD_CPP)
+        self.run_cmd("git add dir1/bad1.cpp")
+        self.run_cmd("git commit -m 'added poorly-formatted cpp file'")
+        self.write_file('dir1/bad2.cpp', BAD_CPP)
+        
+        self.run_stylize(["--clang_style=Google", "--diffbase=master", "--exclude_dirs", "dir1"])
+        self.assertFalse(self.file_changed('dir1/bad1.cpp', BAD_CPP))
+        self.assertFalse(self.file_changed('dir1/bad2.cpp', BAD_CPP))
+
