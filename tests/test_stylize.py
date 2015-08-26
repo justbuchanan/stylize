@@ -115,8 +115,8 @@ class TestDiffbaseExclude(Fixture):
         self.run_cmd("git add dir1/bad1.cpp")
         self.run_cmd("git commit -m 'added poorly-formatted cpp file'")
         self.write_file('dir1/bad2.cpp', BAD_CPP)
-        
-        self.run_stylize(["--clang_style=Google", "--diffbase=master", "--exclude_dirs", "dir1"])
+
+        self.run_stylize(["--clang_style=Google", "--diffbase=master",
+                          "--exclude_dirs", "dir1"])
         self.assertFalse(self.file_changed('dir1/bad1.cpp', BAD_CPP))
         self.assertFalse(self.file_changed('dir1/bad2.cpp', BAD_CPP))
-

@@ -31,7 +31,8 @@ def enumerate_changed_files(exclude=[], diffbase="origin/master"):
         filepath = line.rstrip()
         abspath = os.path.abspath(filepath)
         if os.path.exists(filepath):
-            if not any(abspath.startswith(excluded_dir) for excluded_dir in exclude):
+            if not any(abspath.startswith(excluded_dir)
+                           for excluded_dir in exclude):
                 yield filepath
 
 
