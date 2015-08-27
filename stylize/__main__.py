@@ -104,7 +104,7 @@ def main():
         if len(exts_requiring_full_reformat) > 0:
             files_with_relevant_extensions = filter(
                 lambda file: file_ext(file) in exts_requiring_full_reformat,
-                enumerate_all_files())
+                enumerate_all_files(ARGS.exclude_dirs))
             files_to_format = chain(changed_files,
                                     files_with_relevant_extensions)
     else:
