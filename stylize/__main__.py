@@ -15,7 +15,8 @@ import termios
 
 def enumerate_all_files(exclude=[]):
     for root, dirs, files in os.walk('.', topdown=True):
-        dirs[:] = [d for d in dirs
+        dirs[:] = [d
+                   for d in dirs
                    if os.path.abspath(root + '/' + d) not in exclude]
         for f in files:
             yield root + '/' + f
@@ -32,7 +33,7 @@ def enumerate_changed_files(exclude=[], diffbase="origin/master"):
         abspath = os.path.abspath(filepath)
         if os.path.exists(filepath):
             if not any(abspath.startswith(excluded_dir)
-                           for excluded_dir in exclude):
+                       for excluded_dir in exclude):
                 yield filepath
 
 
@@ -47,12 +48,11 @@ def main():
         action='store_true',
         help=
         "Determine if all code is in accordance with the style configs, but don't fix them if they're not. An nonzero exit code indicates that some files don't meet the style requirements.")
-    parser.add_argument(
-        "--exclude_dirs",
-        type=str,
-        default=[],
-        nargs="+",
-        help="A list of directories to exclude")
+    parser.add_argument("--exclude_dirs",
+                        type=str,
+                        default=[],
+                        nargs="+",
+                        help="A list of directories to exclude")
     parser.add_argument(
         "--diffbase",
         help=
@@ -97,8 +97,8 @@ def main():
             if formatter.config_file_name in changed_files:
                 print(
                     "Config file '%s' changed.  %s all files with extensions: %s"
-                    % (formatter.config_file_name, verb, str(
-                        formatter.file_extensions)))
+                    % (formatter.config_file_name, verb,
+                       str(formatter.file_extensions)))
                 exts_requiring_full_reformat |= set(formatter.file_extensions)
 
         if len(exts_requiring_full_reformat) > 0:
@@ -140,14 +140,12 @@ def main():
 
     # Print final stats
     if ARGS.check:
-        print_aligned(
-            "[%d / %d] files need formatting" %
-            (file_change_count, file_scan_count), "")
+        print_aligned("[%d / %d] files need formatting" %
+                      (file_change_count, file_scan_count), "")
         return file_change_count
     else:
-        print_aligned(
-            "[%d / %d] files formatted" % (file_change_count, file_scan_count),
-            "")
+        print_aligned("[%d / %d] files formatted" %
+                      (file_change_count, file_scan_count), "")
         return 0
 
 

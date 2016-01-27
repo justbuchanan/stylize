@@ -57,8 +57,8 @@ class TestFormatCpp(Fixture):
         self.write_file('bad.cpp', BAD_CPP)
         self.write_file('good.cpp', GOOD_CPP)
 
-        self.assertNotEqual(0, self.run_stylize(["--clang_style=Google",
-                                                 "--check"]))
+        self.assertNotEqual(
+            0, self.run_stylize(["--clang_style=Google", "--check"]))
 
         self.assertEqual(0, self.run_stylize(["--clang_style=Google"]))
         self.assertTrue(self.file_changed('bad.cpp', BAD_CPP))
