@@ -25,14 +25,15 @@ class ClangFormatter(Formatter):
 
     def run(self, args, filepath, check=False, calc_diff=False):
         logfile = open("/dev/null", "w")
-        if check or calc_diff:
-            popen_args = [self.clang_command]
-            if args.clang_style:
-                popen_args.append("-style=%s" % args.clang_style)
-            popen_args.append(filepath)
-            outfile_path = os.path.join(self._tempdir, filepath)
 
+        popen_args = [self.clang_command]
+        if args.clang_style:
+            popen_args.append("-style=%s" % args.clang_style)
+        popen_args.append(filepath)
+
+        if check or calc_diff:
             # write style-compliant version of file to a tmp directory
+            outfile_path = os.path.join(self._tempdir, filepath)
             outfile = open(outfile_path, 'w')
             proc = subprocess.Popen(popen_args, stdout=outfile)
             proc.communicate()
@@ -47,11 +48,7 @@ class ClangFormatter(Formatter):
             return noncompliant, patch
         else:
             md5_before = file_md5(filepath)
-            popen_args = [self.clang_command, "-i"]
-            if args.clang_style:
-                popen_args.append("-style=%s" % args.clang_style)
-            popen_args.append(filepath)
-            proc = subprocess.Popen(popen_args, stdout=logfile, stderr=logfile)
+            proc = subprocess.Popen(popen_args + ['-i'], stdout=logfile, stderr=logfile)
             proc.communicate()
             md5_after = file_md5(filepath)
             return (md5_before != md5_after), None

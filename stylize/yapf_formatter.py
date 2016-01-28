@@ -23,22 +23,20 @@ class YapfFormatter(Formatter):
 
     def run(self, args, filepath, check=False, calc_diff=False):
         logfile = open("/dev/null", "w")
-        style_arg = "--style=%s" % (args.yapf_style if args.yapf_style != None
-                                    else "pep8")
+        style_arg = "--style=%s" % (args.yapf_style or "pep8")
+        popen_args = ["yapf", style_arg, filepath]
         if check or calc_diff:
             # write style-compliant version of file to a tmp directory
             outfile_path = os.path.join(self._tempdir, filepath)
             outfile = open(outfile_path, 'w')
-
-            # TODO: Popen exit codes?
-
             proc = subprocess.Popen(
-                ["yapf", style_arg, filepath],
+                popen_args,
                 stdout=outfile,
                 stderr=logfile)
             proc.communicate()
-
             outfile.close()
+
+            # TODO: Popen exit codes?
 
             # note: filepath[2:] cuts off leading './'
             patch = calculate_diff(filepath, outfile_path, filepath[2:])
@@ -48,7 +46,7 @@ class YapfFormatter(Formatter):
         else:
             md5_before = file_md5(filepath)
             proc = subprocess.Popen(
-                ["yapf", "-i", style_arg, filepath],
+                popen_args + ['-i'],
                 stdout=logfile,
                 stderr=logfile)
             proc.communicate()
