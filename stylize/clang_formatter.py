@@ -4,7 +4,7 @@ from stylize.util import file_md5
 import os
 import subprocess
 import shutil
-# import tmpfile
+import tempfile
 
 
 class ClangFormatter(Formatter):
@@ -13,6 +13,7 @@ class ClangFormatter(Formatter):
         self.clang_command = self.get_command()
         self._config_file_name = ".clang-format"
         self.file_extensions = [".c", ".h", ".cpp", ".hpp"]
+        self._tempdir = tempfile.mkdtemp()
 
     def add_args(self, argparser):
         argparser.add_argument(
@@ -22,14 +23,32 @@ class ClangFormatter(Formatter):
             help=
             "The style to pass to clang-format.  See `clang-format --help` for more info.")
 
-    def run(self, args, filepath, check=False):
+    def run(self, args, filepath, check=False, calc_diff=False):
         logfile = open("/dev/null", "w")
-        if check:
-            style_arg = "-style=%s" % args.clang_style if args.clang_style != None else ""
-            return os.system(
-                self.clang_command +
-                " %s -output-replacements-xml %s | grep '<replacement ' > /dev/null 2>&1"
-                % (style_arg, filepath)) == 0
+        if check or calc_diff:
+            popen_args = [self.clang_command, "-i"]
+            if args.clang_style:
+                popen_args.append("-style=%s" % args.clang_style)
+            popen_args.append(filepath)
+            outfile_path = os.path.join(self._tempdir, filepath)
+
+            # write style-compliant version of file to a tmp directory
+            outfile = open(outfile_path, 'w')
+            proc = subprocess.Popen(popen_args, stdout=outfile)
+            proc.communicate()
+            outfile.close()
+
+            # TODO: Popen exit codes?
+
+            diffproc = subprocess.Popen(['diff', '-Naur', filepath, outfile_path], stdout=subprocess.PIPE)
+            out, err = diffproc.communicate()
+
+            # TODO: use -L parameter to diff to prepend 'a' and 'b' prefixes that git expects and to remove temp dir path
+
+            noncompliant = len(out) > 0
+            patch = out.decode('utf-8')
+
+            return noncompliant, patch
         else:
             md5_before = file_md5(filepath)
             popen_args = [self.clang_command, "-i"]
@@ -39,7 +58,7 @@ class ClangFormatter(Formatter):
             proc = subprocess.Popen(popen_args, stdout=logfile, stderr=logfile)
             proc.communicate()
             md5_after = file_md5(filepath)
-            return md5_before != md5_after
+            return (md5_before != md5_after), None
 
     def get_command(self):
         if shutil.which("clang-format") != None:

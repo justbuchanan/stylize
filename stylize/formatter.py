@@ -16,10 +16,13 @@ class Formatter:
         return self._config_file_name
 
     ## Run the formatter on the specified file.
-    # @param check If true, run in checkstyle mode and don't modify the file.
     # @param args The arguments parsed by the ArgumentParser
-    # @return True if the file needed/needs formatting
-    def run(self, args, filepath, check=False):
+    # @param filepath The file to check/format
+    # @param check If true, run in checkstyle mode and don't modify the file.
+    # @param calc_diff If true, the second return value of this function is the patch needed to bring the file into compliance
+    # @return (noncompliant, patch) tuple.  @noncompliant is True if the file
+    # needed/needs formatting and @patch contains a git-formatted patch if @calc_patch is True.
+    def run(self, args, filepath, check=False, calc_diff=False):
         raise NotImplementedError("Subclass of Formatter must override run()")
 
     ## Checks if requirements are fullfilled and returns the command to use if they are

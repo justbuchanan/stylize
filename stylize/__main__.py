@@ -121,7 +121,12 @@ def main():
         print("%s all c++ and python files in the project..." % verb)
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
 
+
+    # This variable holds the final patch
+    patch = ""
+
     def process_file(filepath):
+        nonlocal patch
         nonlocal file_scan_count
         nonlocal file_change_count
         nonlocal ARGS
@@ -131,7 +136,12 @@ def main():
             return
         formatter = formatters_by_ext[ext]
 
-        needed_formatting = formatter.run(ARGS, filepath, ARGS.check)
+        calc_patch = ARGS.output_patch_file != None
+        needed_formatting, patch_partial = formatter.run(ARGS, filepath, ARGS.check, calc_patch)
+
+        # collect patch
+        if ARGS.output_patch_file and needed_formatting:
+            patch += patch_partial + "\n"
 
         file_scan_count += 1
         if needed_formatting:
@@ -148,15 +158,25 @@ def main():
     workers = ThreadPool()
     workers.map(process_file, files_to_format)
 
+
+    retcode = 0;
+
     # Print final stats
     if ARGS.check:
         print_aligned("[%d / %d] files need formatting" %
                       (file_change_count, file_scan_count), "")
-        return 0 if file_change_count == 0 else 1
+        retcode = 0 if file_change_count == 0 else 1
     else:
         print_aligned("[%d / %d] files formatted" %
                       (file_change_count, file_scan_count), "")
-        return 0
+        retcode = 0
+
+    if ARGS.output_patch_file:
+        print("Writing patch to file: '%s'" % ARGS.output_patch_file)
+        with open(ARGS.output_patch_file, 'w') as patchfile:
+            patchfile.write(patch)
+
+    return retcode
 
 
 if __name__ == '__main__':
