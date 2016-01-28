@@ -27,7 +27,7 @@ class Formatter:
     def get_command(self):
         return None
 
-    ## A list of file extensions that this formatter is relevant for.  Included
+    ## A list of file extensions that this formatter is relevant for.  Includes
     # the dot.
     @property
     def file_extensions(self):

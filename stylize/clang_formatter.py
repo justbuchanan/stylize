@@ -4,6 +4,7 @@ from stylize.util import file_md5
 import os
 import subprocess
 import shutil
+# import tmpfile
 
 
 class ClangFormatter(Formatter):

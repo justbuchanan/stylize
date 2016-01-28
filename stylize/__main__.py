@@ -10,11 +10,10 @@ import struct
 import subprocess
 from multiprocessing.pool import ThreadPool
 import sys
-import termios
 
 
-def enumerate_all_files(exclude=[]):
-    for root, dirs, files in os.walk('.', topdown=True):
+def enumerate_all_files(exclude=[], directory='.'):
+    for root, dirs, files in os.walk(directory, topdown=True):
         dirs[:] = [d
                    for d in dirs
                    if os.path.abspath(root + '/' + d) not in exclude]
@@ -47,12 +46,17 @@ def main():
         "--check",
         action='store_true',
         help=
-        "Determine if all code is in accordance with the style configs, but don't fix them if they're not. An nonzero exit code indicates that some files don't meet the style requirements.")
+        "Determine if all code is in accordance with the style configs, but don't fix them if they're not. A nonzero exit code indicates that some files don't meet the style requirements.")
     parser.add_argument("--exclude_dirs",
                         type=str,
                         default=[],
                         nargs="+",
                         help="A list of directories to exclude")
+    parser.add_argument(
+        "--output_patch_file",
+        type=str,
+        default=None,help=
+        "If specified, a patch file is generated at the given path that, when aplied to the project, will fix all style mistakes.")
     parser.add_argument(
         "--diffbase",
         help=
@@ -75,6 +79,12 @@ def main():
 
     ARGS.exclude_dirs = [os.path.abspath(p) for p in ARGS.exclude_dirs
                          ] + [os.path.abspath('.git')]
+
+    # TODO: rethink?
+    if ARGS.output_patch_file != None and not ARGS.check:
+        print(
+            "The --check flag must be used when specifying an output patch file",
+            file=sys.stderr)
 
     # Print initial status info
     verb = "Checkstyling" if ARGS.check else "Formatting"
@@ -142,7 +152,7 @@ def main():
     if ARGS.check:
         print_aligned("[%d / %d] files need formatting" %
                       (file_change_count, file_scan_count), "")
-        return file_change_count
+        return 0 if file_change_count == 0 else 1
     else:
         print_aligned("[%d / %d] files formatted" %
                       (file_change_count, file_scan_count), "")

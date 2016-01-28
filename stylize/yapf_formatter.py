@@ -7,8 +7,8 @@ import shutil
 
 class YapfFormatter(Formatter):
     def __init__(self):
-        super().__init__()
-        self.file_extensions = [".py"]
+        super().__init__(  )
+        self.file_extensions= [      ".py"]
         self._config_file_name = ".style.yapf"
 
     def add_args(self, argparser):
@@ -29,7 +29,7 @@ class YapfFormatter(Formatter):
                 stdout=subprocess.PIPE,
                 stderr=logfile)
             out, err = proc.communicate()
-            return len(out) > 0
+            return out if len(out) > 0 else None
         else:
             proc = subprocess.Popen(
                 ["yapf", "-i", style_arg, filepath],
