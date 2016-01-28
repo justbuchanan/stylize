@@ -1,5 +1,5 @@
 from stylize.formatter import Formatter
-from stylize.util import file_md5
+from stylize.util import *
 
 import os
 import subprocess
@@ -26,7 +26,7 @@ class ClangFormatter(Formatter):
     def run(self, args, filepath, check=False, calc_diff=False):
         logfile = open("/dev/null", "w")
         if check or calc_diff:
-            popen_args = [self.clang_command, "-i"]
+            popen_args = [self.clang_command]
             if args.clang_style:
                 popen_args.append("-style=%s" % args.clang_style)
             popen_args.append(filepath)
@@ -40,13 +40,9 @@ class ClangFormatter(Formatter):
 
             # TODO: Popen exit codes?
 
-            diffproc = subprocess.Popen(['diff', '-Naur', filepath, outfile_path], stdout=subprocess.PIPE)
-            out, err = diffproc.communicate()
-
-            # TODO: use -L parameter to diff to prepend 'a' and 'b' prefixes that git expects and to remove temp dir path
-
-            noncompliant = len(out) > 0
-            patch = out.decode('utf-8')
+            # note: filepath[2:] cuts off leading './'
+            patch = calculate_diff(filepath, outfile_path, filepath[2:])
+            noncompliant = len(patch) > 0
 
             return noncompliant, patch
         else:

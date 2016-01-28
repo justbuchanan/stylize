@@ -1,8 +1,10 @@
 from stylize.formatter import Formatter
-from stylize.util import file_md5, bytes_md5
+from stylize.util import *
 
+import os
 import subprocess
 import shutil
+import tempfile
 
 
 class YapfFormatter(Formatter):
@@ -10,6 +12,7 @@ class YapfFormatter(Formatter):
         super().__init__(  )
         self.file_extensions= [      ".py"]
         self._config_file_name = ".style.yapf"
+        self._tempdir = tempfile.mkdtemp()
 
     def add_args(self, argparser):
         argparser.add_argument(
@@ -23,12 +26,25 @@ class YapfFormatter(Formatter):
         style_arg = "--style=%s" % (args.yapf_style if args.yapf_style != None
                                     else "pep8")
         if check or calc_diff:
+            # write style-compliant version of file to a tmp directory
+            outfile_path = os.path.join(self._tempdir, filepath)
+            outfile = open(outfile_path, 'w')
+
+            # TODO: Popen exit codes?
+
             proc = subprocess.Popen(
-                ["yapf", "--verify", "--diff", style_arg, filepath],
-                stdout=subprocess.PIPE,
+                ["yapf", style_arg, filepath],
+                stdout=outfile,
                 stderr=logfile)
-            out, err = proc.communicate()
-            return out if len(out) > 0 else None, out.decode('utf-8')
+            proc.communicate()
+
+            outfile.close()
+
+            # note: filepath[2:] cuts off leading './'
+            patch = calculate_diff(filepath, outfile_path, filepath[2:])
+            noncompliant = len(patch) > 0
+
+            return noncompliant, patch
         else:
             md5_before = file_md5(filepath)
             proc = subprocess.Popen(
