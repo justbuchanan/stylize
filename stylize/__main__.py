@@ -80,12 +80,6 @@ def main():
     ARGS.exclude_dirs = [os.path.abspath(p) for p in ARGS.exclude_dirs
                          ] + [os.path.abspath('.git')]
 
-    # TODO: rethink?
-    if ARGS.output_patch_file != None and not ARGS.check:
-        print(
-            "The --check flag must be used when specifying an output patch file",
-            file=sys.stderr)
-
     # Print initial status info
     verb = "Checkstyling" if ARGS.check else "Formatting"
     if ARGS.diffbase:
