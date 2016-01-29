@@ -166,9 +166,12 @@ def main():
         retcode = 0
 
     if ARGS.output_patch_file:
-        print("Writing patch to file: '%s'" % ARGS.output_patch_file)
-        with open(ARGS.output_patch_file, 'w') as patchfile:
-            patchfile.write(patch)
+        if file_change_count > 0:
+            print("Writing patch to file: '%s'" % ARGS.output_patch_file)
+            with open(ARGS.output_patch_file, 'w') as patchfile:
+                patchfile.write(patch)
+        else:
+            print("Skipping patch file generation, all files are style-compliant.")
 
     return retcode
 
