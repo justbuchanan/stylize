@@ -40,7 +40,8 @@ class ClangFormatter(Formatter):
             proc.communicate()
             outfile.close()
 
-            # TODO: Popen exit codes?
+            if proc.returncode != 0:
+                raise RuntimeError("Call to clang-format failed")
 
             # note: filepath[2:] cuts off leading './'
             patch = calculate_diff(filepath, outfile_path, filepath[2:])
