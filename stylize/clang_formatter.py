@@ -37,11 +37,13 @@ class ClangFormatter(Formatter):
             os.makedirs(os.path.dirname(outfile_path), exist_ok=True)
             outfile = open(outfile_path, 'w')
             proc = subprocess.Popen(popen_args, stdout=outfile)
-            proc.communicate()
+            out, err = proc.communicate()
             outfile.close()
 
             if proc.returncode != 0:
-                raise RuntimeError("Call to clang-format failed")
+                raise RuntimeError(
+                    "Call to clang-format failed for file '%s':\n%s" %
+                    (filepath, err))
 
             # note: filepath[2:] cuts off leading './'
             patch = calculate_diff(filepath, outfile_path, filepath[2:])
