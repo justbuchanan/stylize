@@ -36,9 +36,11 @@ class YapfFormatter(Formatter):
             out, err = proc.communicate()
             outfile.close()
 
-            if proc.returncode != 0:
-                raise RuntimeError("Call to yapf failed:\n%s" %
-                                   err.decode('utf-8'))
+            # return code zero indicates style-compliant file. 2 indicates non-
+            # compliance.  Other return codes indicate errors.
+            if proc.returncode != 0 and proc.returncode != 2:
+                raise RuntimeError("Call to yapf failed for file '%s':\n%s" %
+                                   (filepath, err.decode('utf-8')))
 
             # note: filepath[2:] cuts off leading './'
             patch = calculate_diff(filepath, outfile_path, filepath[2:])
