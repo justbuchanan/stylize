@@ -34,6 +34,7 @@ class ClangFormatter(Formatter):
         if check or calc_diff:
             # write style-compliant version of file to a tmp directory
             outfile_path = os.path.join(self._tempdir, filepath)
+            os.makedirs(os.path.dirname(outfile_path), exist_ok=True)
             outfile = open(outfile_path, 'w')
             proc = subprocess.Popen(popen_args, stdout=outfile)
             proc.communicate()
