@@ -14,7 +14,8 @@ import sys
 
 def enumerate_all_files(exclude=[], directory='.'):
     for root, dirs, files in os.walk(directory, topdown=True):
-        dirs[:] = [d for d in dirs
+        dirs[:] = [d
+                   for d in dirs
                    if os.path.abspath(root + '/' + d) not in exclude]
         for f in files:
             yield root + '/' + f
@@ -31,7 +32,7 @@ def enumerate_changed_files(exclude=[], diffbase="origin/master"):
         abspath = os.path.abspath(filepath)
         if os.path.exists(filepath):
             if not any(abspath.startswith(excluded_dir)
-                           for excluded_dir in exclude):
+                       for excluded_dir in exclude):
                 yield filepath
 
 
