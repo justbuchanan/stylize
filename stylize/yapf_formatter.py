@@ -30,14 +30,15 @@ class YapfFormatter(Formatter):
             outfile_path = os.path.join(self._tempdir, filepath)
             os.makedirs(os.path.dirname(outfile_path), exist_ok=True)
             outfile = open(outfile_path, 'w')
-            proc = subprocess.Popen(popen_args, stdout=outfile, stderr=subprocess.PIPE)
+            proc = subprocess.Popen(popen_args,
+                                    stdout=outfile,
+                                    stderr=subprocess.PIPE)
             out, err = proc.communicate()
             outfile.close()
 
             if proc.returncode != 0:
-                raise RuntimeError("Call to yapf failed:\n%s" % err.decode('utf-8'))
-
-            # TODO: Popen exit codes?
+                raise RuntimeError("Call to yapf failed:\n%s" %
+                                   err.decode('utf-8'))
 
             # note: filepath[2:] cuts off leading './'
             patch = calculate_diff(filepath, outfile_path, filepath[2:])
