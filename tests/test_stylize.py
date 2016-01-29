@@ -120,3 +120,42 @@ class TestDiffbaseExclude(Fixture):
                           "--exclude_dirs", "dir1"])
         self.assertFalse(self.file_changed('dir1/bad1.cpp', BAD_CPP))
         self.assertFalse(self.file_changed('dir1/bad2.cpp', BAD_CPP))
+
+
+## Test stylize's patch output feature
+class TestPatchOutput(Fixture):
+    def test_patch_output(self):
+        self.run_cmd("git init")
+        self.write_file("bad.cpp", BAD_CPP)
+        self.write_file("good.cpp", GOOD_CPP)
+        self.write_file("bad.py", BAD_PY)
+        self.write_file("good.py", GOOD_PY)
+        self.write_file(".gitignore", b"*.patch\n")
+
+        self.run_cmd("git init")
+        self.run_cmd("git add --all")
+        self.run_cmd("git commit -m 'first commit'")
+
+        self.run_stylize([
+            "--clang_style=Google",
+            "--output_patch_file=pretty.patch"])
+
+        # ensure that a patch file was generated
+        self.assertTrue(os.path.isfile('pretty.patch'))
+
+        # ensure that stylize didn't change any files (note that the patch file
+        # is ignored by the .gitignore file)
+        self.assertTrue(self.run_cmd("git diff --quiet") == 0)
+
+        # ensure that applying the patch works without error
+        self.assertTrue(self.run_cmd("git apply pretty.patch") == 0)
+
+        # commit changes
+        self.run_cmd("git add .")
+        self.run_cmd("git commit -m 'clean'")
+
+        # re-run stylize
+        self.assertTrue(self.run_stylize(["--clang_style=Google"]) == 0)
+
+        # ensure that stylize didn't need to change anything else
+        self.assertTrue(self.run_cmd("git diff --quiet") == 0)
