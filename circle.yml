@@ -20,4 +20,4 @@ test:
         # Run unit tests and upload code coverage to coveralls.io
         - coverage run --include="./stylize/*" -m nose
         - coveralls
-        - stylize --yapf_style=.style.yapf --check --exclude_dirs=build
+        - stylize --yapf_style=.style.yapf --check --exclude_dirs=build --output_patch_file="$CIRCLE_ARTIFACTS/clean.patch"
