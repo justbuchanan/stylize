@@ -2,8 +2,8 @@ from stylize.formatter import Formatter
 from stylize.util import *
 
 import os
-import subprocess
 import shutil
+import subprocess
 import tempfile
 
 

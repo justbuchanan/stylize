@@ -3,12 +3,12 @@ from stylize.clang_formatter import ClangFormatter
 from stylize.yapf_formatter import YapfFormatter
 
 from itertools import chain
+from multiprocessing.pool import ThreadPool
 import argparse
 import fcntl
 import os
 import struct
 import subprocess
-from multiprocessing.pool import ThreadPool
 import sys
 
 
@@ -130,9 +130,9 @@ def main():
             return
         formatter = formatters_by_ext[ext]
 
-        calc_patch = ARGS.output_patch_file != None
+        create_patch = ARGS.output_patch_file != None
         needed_formatting, patch_partial = formatter.run(
-            ARGS, filepath, ARGS.check, calc_patch)
+            ARGS, filepath, ARGS.check, create_patch)
 
         # collect patch
         if ARGS.output_patch_file and needed_formatting:
@@ -171,7 +171,8 @@ def main():
             with open(ARGS.output_patch_file, 'w') as patchfile:
                 patchfile.write(patch)
         else:
-            print("Skipping patch file generation, all files are style-compliant.")
+            print(
+                "Skipping patch file generation, all files are style-compliant.")
 
     return retcode
 

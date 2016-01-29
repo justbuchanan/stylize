@@ -1,8 +1,8 @@
 from nose.tools import nottest
-import os
-import subprocess
 from stylize.__main__ import main as stylize_main
+import os
 import stylize.util as util
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -125,22 +125,22 @@ class TestDiffbaseExclude(Fixture):
 ## Test stylize's patch output feature
 class TestPatchOutput(Fixture):
     def test_patch_output(self):
-        self.run_cmd("git init")
+        # Init with both good and bad python and c++ files
         self.write_file("bad.cpp", BAD_CPP)
         self.write_file("good.cpp", GOOD_CPP)
         self.write_file("bad.py", BAD_PY)
         self.write_file("good.py", GOOD_PY)
         self.write_file(".gitignore", b"*.patch\n")
 
+        # Setup git
         self.run_cmd("git init")
         self.run_cmd("git add --all")
         self.run_cmd("git commit -m 'first commit'")
 
+        # Tell stylize to generate a patch file and check it
         self.run_stylize([
             "--clang_style=Google", "--output_patch_file=pretty.patch"
         ])
-
-        # ensure that a patch file was generated
         self.assertTrue(os.path.isfile('pretty.patch'))
 
         # ensure that stylize didn't change any files (note that the patch file
