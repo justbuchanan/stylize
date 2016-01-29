@@ -9,8 +9,8 @@ import tempfile
 
 class YapfFormatter(Formatter):
     def __init__(self):
-        super().__init__(  )
-        self.file_extensions= [      ".py"]
+        super().__init__()
+        self.file_extensions = [".py"]
         self._config_file_name = ".style.yapf"
         self._tempdir = tempfile.mkdtemp()
 
@@ -29,10 +29,7 @@ class YapfFormatter(Formatter):
             # write style-compliant version of file to a tmp directory
             outfile_path = os.path.join(self._tempdir, filepath)
             outfile = open(outfile_path, 'w')
-            proc = subprocess.Popen(
-                popen_args,
-                stdout=outfile,
-                stderr=logfile)
+            proc = subprocess.Popen(popen_args, stdout=outfile, stderr=logfile)
             proc.communicate()
             outfile.close()
 
@@ -45,10 +42,9 @@ class YapfFormatter(Formatter):
             return noncompliant, patch
         else:
             md5_before = file_md5(filepath)
-            proc = subprocess.Popen(
-                popen_args + ['-i'],
-                stdout=logfile,
-                stderr=logfile)
+            proc = subprocess.Popen(popen_args + ['-i'],
+                                    stdout=logfile,
+                                    stderr=logfile)
             proc.communicate()
             md5_after = file_md5(filepath)
             return (md5_before != md5_after), None

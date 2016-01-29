@@ -137,8 +137,8 @@ class TestPatchOutput(Fixture):
         self.run_cmd("git commit -m 'first commit'")
 
         self.run_stylize([
-            "--clang_style=Google",
-            "--output_patch_file=pretty.patch"])
+            "--clang_style=Google", "--output_patch_file=pretty.patch"
+        ])
 
         # ensure that a patch file was generated
         self.assertTrue(os.path.isfile('pretty.patch'))

@@ -55,7 +55,8 @@ def main():
     parser.add_argument(
         "--output_patch_file",
         type=str,
-        default=None,help=
+        default=None,
+        help=
         "If specified, a patch file is generated at the given path that, when aplied to the project, will fix all style mistakes.")
     parser.add_argument(
         "--diffbase",
@@ -115,7 +116,6 @@ def main():
         print("%s all c++ and python files in the project..." % verb)
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
 
-
     # This variable holds the final patch
     patch = ""
 
@@ -131,7 +131,8 @@ def main():
         formatter = formatters_by_ext[ext]
 
         calc_patch = ARGS.output_patch_file != None
-        needed_formatting, patch_partial = formatter.run(ARGS, filepath, ARGS.check, calc_patch)
+        needed_formatting, patch_partial = formatter.run(
+            ARGS, filepath, ARGS.check, calc_patch)
 
         # collect patch
         if ARGS.output_patch_file and needed_formatting:
@@ -152,8 +153,7 @@ def main():
     workers = ThreadPool()
     workers.map(process_file, files_to_format)
 
-
-    retcode = 0;
+    retcode = 0
 
     # Print final stats
     if ARGS.check:

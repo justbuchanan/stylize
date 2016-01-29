@@ -48,7 +48,9 @@ class ClangFormatter(Formatter):
             return noncompliant, patch
         else:
             md5_before = file_md5(filepath)
-            proc = subprocess.Popen(popen_args + ['-i'], stdout=logfile, stderr=logfile)
+            proc = subprocess.Popen(popen_args + ['-i'],
+                                    stdout=logfile,
+                                    stderr=logfile)
             proc.communicate()
             md5_after = file_md5(filepath)
             return (md5_before != md5_after), None

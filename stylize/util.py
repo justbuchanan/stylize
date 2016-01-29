@@ -33,7 +33,10 @@ def get_terminal_width():
 
 
 def calculate_diff(old_file, new_file, label):
-    diffproc = subprocess.Popen(['diff', '-Naur', old_file, new_file, '-L', 'a/%s' % label, '-L', 'b/%s' % label], stdout=subprocess.PIPE)
+    diffproc = subprocess.Popen(
+        ['diff', '-Naur', old_file, new_file, '-L', 'a/%s' % label, '-L',
+         'b/%s' % label],
+        stdout=subprocess.PIPE)
     out, err = diffproc.communicate()
     return out.decode('utf-8')
 
