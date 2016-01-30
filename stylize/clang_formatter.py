@@ -12,6 +12,7 @@ class ClangFormatter(Formatter):
         super().__init__()
         self.clang_command = self.get_command()
         self.file_extensions = [".c", ".h", ".cpp", ".hpp"]
+        self._config_file_name = ".clang-format"
         self._tempdir = tempfile.mkdtemp()
 
     def add_args(self, argparser):
