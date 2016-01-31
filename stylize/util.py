@@ -32,6 +32,10 @@ def get_terminal_width():
         return 80
 
 
+## Generates a git-compatible patch that when applied to @old_file, will result
+#  in @new_file.  Note: Prepends 'a' and 'b' prefixes to the to/from file paths
+#  for git compatibility.
+# @param label The subpath to the file in the repository.
 def calculate_diff(old_file, new_file, label):
     diffproc = subprocess.Popen(
         ['diff', '-Naur', old_file, new_file, '-L', 'a/%s' % label, '-L',

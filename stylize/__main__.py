@@ -134,7 +134,7 @@ def main():
         needed_formatting, patch_partial = formatter.run(
             ARGS, filepath, ARGS.check, create_patch)
 
-        # collect patch
+        # concatenate all patches together
         if ARGS.output_patch_file and needed_formatting:
             patch += patch_partial + "\n"
 
@@ -142,8 +142,8 @@ def main():
         if needed_formatting:
             file_change_count += 1
 
-            suffix = "✗" if ARGS.check else "✔"
-            print_aligned(filepath, suffix)
+            status = "✗" if ARGS.check else "✔"
+            print_aligned(filepath, status)
         else:
             print_aligned("> %s: %s" % (ext[1:], filepath),
                           "[%d]" % file_scan_count,
@@ -152,8 +152,6 @@ def main():
     # Use all the cores!
     workers = ThreadPool()
     workers.map(process_file, files_to_format)
-
-    retcode = 0
 
     # Print final stats
     if ARGS.check:
