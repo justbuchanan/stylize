@@ -46,7 +46,7 @@ class ClangFormatter(Formatter):
                     (filepath, err))
 
             # note: filepath[2:] cuts off leading './'
-            patch = calculate_diff(filepath, outfile_path, filepath[2:])
+            patch = calculate_diff(filepath, outfile_path, filepath)
             noncompliant = len(patch) > 0
 
             return noncompliant, patch

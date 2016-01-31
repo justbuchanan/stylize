@@ -43,7 +43,7 @@ class YapfFormatter(Formatter):
                                    (filepath, err.decode('utf-8')))
 
             # note: filepath[2:] cuts off leading './'
-            patch = calculate_diff(filepath, outfile_path, filepath[2:])
+            patch = calculate_diff(filepath, outfile_path, filepath)
             noncompliant = len(patch) > 0
 
             return noncompliant, patch
