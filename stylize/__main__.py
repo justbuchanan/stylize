@@ -3,18 +3,17 @@ from stylize.clang_formatter import ClangFormatter
 from stylize.yapf_formatter import YapfFormatter
 
 from itertools import chain
+from multiprocessing.pool import ThreadPool
 import argparse
 import fcntl
 import os
 import struct
 import subprocess
-from multiprocessing.pool import ThreadPool
 import sys
-import termios
 
 
-def enumerate_all_files(exclude=[]):
-    for root, dirs, files in os.walk('.', topdown=True):
+def enumerate_all_files(exclude=[], directory='.'):
+    for root, dirs, files in os.walk(directory, topdown=True):
         dirs[:] = [d
                    for d in dirs
                    if os.path.abspath(root + '/' + d) not in exclude]
@@ -47,12 +46,18 @@ def main():
         "--check",
         action='store_true',
         help=
-        "Determine if all code is in accordance with the style configs, but don't fix them if they're not. An nonzero exit code indicates that some files don't meet the style requirements.")
+        "Determine if all code is in accordance with the style configs, but don't fix them if they're not. A nonzero exit code indicates that some files don't meet the style requirements.")
     parser.add_argument("--exclude_dirs",
                         type=str,
                         default=[],
                         nargs="+",
                         help="A list of directories to exclude")
+    parser.add_argument(
+        "--output_patch_file",
+        type=str,
+        default=None,
+        help=
+        "If specified, a patch file is generated at the given path that, when aplied to the project, will fix all style mistakes.")
     parser.add_argument(
         "--diffbase",
         help=
@@ -111,7 +116,11 @@ def main():
         print("%s all c++ and python files in the project..." % verb)
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
 
+    # This variable holds the final patch
+    patch = ""
+
     def process_file(filepath):
+        nonlocal patch
         nonlocal file_scan_count
         nonlocal file_change_count
         nonlocal ARGS
@@ -121,14 +130,20 @@ def main():
             return
         formatter = formatters_by_ext[ext]
 
-        needed_formatting = formatter.run(ARGS, filepath, ARGS.check)
+        create_patch = ARGS.output_patch_file != None
+        needed_formatting, patch_partial = formatter.run(
+            ARGS, filepath, ARGS.check, create_patch)
+
+        # concatenate all patches together
+        if ARGS.output_patch_file and needed_formatting:
+            patch += patch_partial + "\n"
 
         file_scan_count += 1
         if needed_formatting:
             file_change_count += 1
 
-            suffix = "✗" if ARGS.check else "✔"
-            print_aligned(filepath, suffix)
+            status = "✗" if ARGS.check else "✔"
+            print_aligned(filepath, status)
         else:
             print_aligned("> %s: %s" % (ext[1:], filepath),
                           "[%d]" % file_scan_count,
@@ -142,11 +157,22 @@ def main():
     if ARGS.check:
         print_aligned("[%d / %d] files need formatting" %
                       (file_change_count, file_scan_count), "")
-        return file_change_count
+        retcode = 0 if file_change_count == 0 else 1
     else:
         print_aligned("[%d / %d] files formatted" %
                       (file_change_count, file_scan_count), "")
-        return 0
+        retcode = 0
+
+    if ARGS.output_patch_file:
+        if file_change_count > 0:
+            print("Writing patch to file: '%s'" % ARGS.output_patch_file)
+            with open(ARGS.output_patch_file, 'w') as patchfile:
+                patchfile.write(patch)
+        else:
+            print(
+                "Skipping patch file generation, all files are style-compliant.")
+
+    return retcode
 
 
 if __name__ == '__main__':

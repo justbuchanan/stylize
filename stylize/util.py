@@ -4,6 +4,7 @@ import os
 import struct
 import sys
 import termios
+import subprocess
 
 
 def file_md5(filepath):
@@ -29,6 +30,19 @@ def get_terminal_width():
                                                '1234'))[1]
     except OSError as e:
         return 80
+
+
+## Generates a git-compatible patch that when applied to @old_file, will result
+#  in @new_file.  Note: Prepends 'a' and 'b' prefixes to the to/from file paths
+#  for git compatibility.
+# @param label The subpath to the file in the repository.
+def calculate_diff(old_file, new_file, label):
+    diffproc = subprocess.Popen(
+        ['diff', '-Naur', old_file, new_file, '-L', 'a/%s' % label, '-L',
+         'b/%s' % label],
+        stdout=subprocess.PIPE)
+    out, err = diffproc.communicate()
+    return out.decode('utf-8')
 
 
 ## Print a left-aligned string and a right-aligned string by inserting the
