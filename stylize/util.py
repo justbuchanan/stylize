@@ -44,7 +44,7 @@ def calculate_diff(old_file, new_file, label):
         stdout=subprocess.PIPE)
     out, err = diffproc.communicate()
     if diffproc.returncode != 0:
-        raise RuntimeError("Error calculating file diff, err =\n%s", err)
+        raise RuntimeError("Error calculating file diff, err =\n%s, out=%s", (err, out))
     return out.decode('utf-8')
 
 
