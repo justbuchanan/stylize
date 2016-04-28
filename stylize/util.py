@@ -41,10 +41,11 @@ def calculate_diff(old_file, new_file, label):
     diffproc = subprocess.Popen(
         ['diff', '-Naur', old_file, new_file, '-L', 'a/%s' % label, '-L',
          'b/%s' % label],
-        stdout=subprocess.PIPE)
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
     out, err = diffproc.communicate()
     if diffproc.returncode != 0:
-        raise RuntimeError("Error calculating file diff, err =\n%s, out=%s", (err, out))
+        raise RuntimeError("Error calculating file diff, err =\n%s", err)
     return out.decode('utf-8')
 
 
