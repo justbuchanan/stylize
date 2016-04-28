@@ -37,6 +37,10 @@ def get_terminal_width():
 #  for git compatibility.
 # @param label The subpath to the file in the repository.
 def calculate_diff(old_file, new_file, label):
+    if not os.path.isfile(old_file):
+        raise RuntimeError("Old file doesn't exist")
+    if not os.path.isfile(new_file):
+        raise RuntimeError("New file doesn't exist")
     if label.startswith('./'): label = label[2:]
     diffproc = subprocess.Popen(
         ['diff', '-Naur', old_file, new_file, '-L', 'a/%s' % label, '-L',
