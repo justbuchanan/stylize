@@ -1,6 +1,7 @@
 from stylize.util import print_aligned, file_ext
 from stylize.clang_formatter import ClangFormatter
 from stylize.yapf_formatter import YapfFormatter
+from stylize import __version__
 
 from itertools import chain
 from multiprocessing.pool import ThreadPool
@@ -62,6 +63,10 @@ def main():
         "--diffbase",
         help=
         "The git branch/tag/SHA1 to compare against.  If provided, only files that have changed since the diffbase will be scanned.")
+    parser.add_argument(
+        "--version",
+        action='store_true',
+        help="Print version and exit.")
 
     formatters = [ClangFormatter(), YapfFormatter()]
 
@@ -80,6 +85,11 @@ def main():
 
     ARGS.exclude_dirs = [os.path.abspath(p) for p in ARGS.exclude_dirs
                          ] + [os.path.abspath('.git')]
+
+    # version command
+    if ARGS.version:
+        print("stylize %s" % __version__)
+        exit(0)
 
     # Print initial status info
     verb = "Checkstyling" if ARGS.check else "Formatting"
