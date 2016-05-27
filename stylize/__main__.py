@@ -18,6 +18,7 @@ def enumerate_all_files(exclude=[], directory='.'):
         dirs[:] = [d
                    for d in dirs
                    if os.path.abspath(root + '/' + d) not in exclude]
+        if root.startswith('./'): root = root[2:]
         for f in files:
             yield root + '/' + f
 
@@ -120,8 +121,9 @@ def main():
             files_with_relevant_extensions = filter(
                 lambda file: file_ext(file) in exts_requiring_full_reformat,
                 enumerate_all_files(ARGS.exclude_dirs))
-            files_to_format = chain(changed_files,
-                                    files_with_relevant_extensions)
+            # use set() to eliminate any duplicates
+            files_to_format = set(chain(changed_files,
+                                    files_with_relevant_extensions))
     else:
         print("%s all c++ and python files in the project..." % verb)
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
