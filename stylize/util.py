@@ -31,6 +31,7 @@ def get_terminal_width():
     except OSError as e:
         return 80
 
+
 ## Generates a git-compatible patch that when applied to @old_file, will result
 #  in @new_file.  Note: Prepends 'a' and 'b' prefixes to the to/from file paths
 #  for git compatibility.

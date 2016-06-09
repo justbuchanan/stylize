@@ -64,10 +64,9 @@ def main():
         "--diffbase",
         help=
         "The git branch/tag/SHA1 to compare against.  If provided, only files that have changed since the diffbase will be scanned.")
-    parser.add_argument(
-        "--version",
-        action='store_true',
-        help="Print version and exit.")
+    parser.add_argument("--version",
+                        action='store_true',
+                        help="Print version and exit.")
 
     formatters = [ClangFormatter(), YapfFormatter()]
 
@@ -123,7 +122,7 @@ def main():
                 enumerate_all_files(ARGS.exclude_dirs))
             # use set() to eliminate any duplicates
             files_to_format = set(chain(changed_files,
-                                    files_with_relevant_extensions))
+                                        files_with_relevant_extensions))
     else:
         print("%s all c++ and python files in the project..." % verb)
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
