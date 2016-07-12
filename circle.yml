@@ -16,6 +16,9 @@ dependencies:
         - pip3 install coveralls
 
 test:
+    pre:
+        - git config --global user.name "Circle CI"
+        - git config --global user.email "justbuchanan@gmail.com"
     override:
         # Run unit tests and upload code coverage to coveralls.io
         - coverage run --include="./stylize/*" -m nose
