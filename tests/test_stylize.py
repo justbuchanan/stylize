@@ -87,22 +87,35 @@ class TestFormatPy(Fixture):
 class TestDiffbase(Fixture):
     def test_diffbase(self):
         self.run_cmd("git init")
-        self.write_file('bad1.cpp', BAD_CPP)
-        self.run_cmd("git add bad1.cpp")
+
+        # commit bad file on master
+        self.write_file('file1.cpp', BAD_CPP)
+        self.run_cmd("git add .")
         self.run_cmd("git commit -m 'added poorly-formatted cpp file'")
-        self.write_file('bad2.cpp', BAD_CPP)
 
+        # modify file
+        self.write_file('file1.cpp', (str(BAD_CPP) + '\n').encode('utf-8'))
+        self.run_cmd("git add .")
+        self.run_cmd("git commit -m 'modified file1.cpp'")
+
+        # new branch off of first commit (not most recent on master)
+        self.run_cmd("git checkout -b new-branch HEAD~1")
+
+        # add a new bad file
+        self.write_file('file2.cpp', BAD_CPP)
+
+        # run stylize - the file shouldn't change b/c it was modified on master
+        # *after* this branch was branched off
         self.run_stylize(["--clang_style=Google", "--diffbase=master"])
-
-        self.assertTrue(self.file_changed('bad2.cpp', BAD_CPP))
-        self.assertFalse(self.file_changed('bad1.cpp', BAD_CPP))
+        self.assertFalse(self.file_changed('file1.cpp', BAD_CPP))
+        self.assertTrue(self.file_changed('file2.cpp', BAD_CPP))
 
         # When the config file changes and we're using the --diffbase option,
         # all files with the extensions related to that config should be
         # formatted.
         self.write_file('.clang-format', EXAMPLE_CLANG_FORMAT)
         self.run_stylize(["--clang_style=file", "--diffbase=master"])
-        self.assertTrue(self.file_changed('bad1.cpp', BAD_CPP))
+        self.assertTrue(self.file_changed('file1.cpp', BAD_CPP))
 
 
 ## Test to ensure that stylize respects the "--exclude_dirs" option when it's
