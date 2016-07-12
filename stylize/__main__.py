@@ -23,12 +23,29 @@ def enumerate_all_files(exclude=[], directory='.'):
             yield root + '/' + f
 
 
-## Yields all files that differ from @diffbase or are not tracked by git.
+## Returns the checksum of the currently-checked-out commit
+def current_git_commit():
+    return subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip(
+    ).decode('utf-8')
+
+
+## Yields all files that differ from the branching point with @diffbase or are
+# not tracked by git.
 def enumerate_changed_files(exclude=[], diffbase="origin/master"):
-    out = subprocess.check_output(
-        "git diff --name-only %s; git ls-files --others --exclude-standard" %
-        diffbase,
-        shell=True)
+    # find common ancestor between @diffbase and @current_commit
+    ancestor = subprocess.check_output(
+        ['git', 'merge-base', current_git_commit(), diffbase]).strip().decode(
+            'utf-8')
+
+    # get list of files that have changed since @ancestor.
+    out = subprocess.check_output([
+        "git", "--no-pager", "diff", "--name-only", ancestor
+    ])
+    # Also include un-committed files.
+    out += subprocess.check_output(['git', 'ls-files', '--others',
+                                    '--exclude-standard'])
+
+    # enumerate and yield relevant results
     for line in out.decode("utf-8").splitlines():
         filepath = line.rstrip()
         abspath = os.path.abspath(filepath)
