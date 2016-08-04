@@ -36,17 +36,18 @@ def enumerate_changed_files(exclude=[], diffbase="origin/master"):
     try:
         # try to find common ancestor between @diffbase and @current_commit
         ancestor = subprocess.check_output(
-            ['git', 'merge-base', current_git_commit(), diffbase]).strip().decode(
-                'utf-8')
+            ['git', 'merge-base', current_git_commit(), diffbase]).strip(
+            ).decode('utf-8')
     except subprocess.CalledProcessError:
         # There was no common ancestor between @diffbase and @current_commit
         ancestor = subprocess.check_output(
-            ['git', 'rev-list', '--max-parents=0',
-             current_git_commit()]).strip().decode('utf-8')
-        print("[ERR] Your diffbase: '" + str(diffbase)
-              + "' does not share a common ancestor with '"
-              + str(current_git_commit()) + "'. "
-              + "Using '" + str(ancestor) + "' instead.", file=sys.stderr)
+            ['git', 'rev-list', '--max-parents=0', current_git_commit()
+             ]).strip().decode('utf-8')
+        print("[ERR] Your diffbase: '" + str(diffbase) +
+              "' does not share a common ancestor with '" +
+              str(current_git_commit()) + "'. " + "Using '" + str(ancestor) +
+              "' instead.",
+              file=sys.stderr)
 
     # get list of files that have changed since @ancestor.
     out = subprocess.check_output([
