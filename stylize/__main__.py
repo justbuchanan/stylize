@@ -1,3 +1,4 @@
+from __future__ import print_function
 from stylize.util import print_aligned, file_ext
 from stylize.clang_formatter import ClangFormatter
 from stylize.yapf_formatter import YapfFormatter
@@ -32,10 +33,20 @@ def current_git_commit():
 ## Yields all files that differ from the branching point with @diffbase or are
 # not tracked by git.
 def enumerate_changed_files(exclude=[], diffbase="origin/master"):
-    # find common ancestor between @diffbase and @current_commit
-    ancestor = subprocess.check_output(
-        ['git', 'merge-base', current_git_commit(), diffbase]).strip().decode(
-            'utf-8')
+    try:
+        # try to find common ancestor between @diffbase and @current_commit
+        ancestor = subprocess.check_output(
+            ['git', 'merge-base', current_git_commit(), diffbase]).strip().decode(
+                'utf-8')
+    except subprocess.CalledProcessError:
+        # There was no common ancestor between @diffbase and @current_commit
+        ancestor = subprocess.check_output(
+            ['git', 'rev-list', '--max-parents=0',
+             current_git_commit()]).strip().decode('utf-8')
+        print("[ERR] Your diffbase: '" + str(diffbase)
+              + "' does not share a common ancestor with '"
+              + str(current_git_commit()) + "'. "
+              + "Using '" + str(ancestor) + "' instead.", file=sys.stderr)
 
     # get list of files that have changed since @ancestor.
     out = subprocess.check_output([
