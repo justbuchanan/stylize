@@ -135,6 +135,26 @@ class TestDiffbaseExclude(Fixture):
         self.assertFalse(self.file_changed('dir1/bad2.cpp', BAD_CPP))
 
 
+# Run stylize with an invalid --diffbase option
+class TestInvalidDiffbase(Fixture):
+    def test_invalid_diffbase(self):
+        # commit file.cpp on master
+        self.run_cmd('git init')
+        self.write_file('file.cpp', BAD_CPP)
+        self.run_cmd('git add .')
+        self.run_cmd('git commit -m "commit"')
+
+        # switch to a new branch and rebase the commit so 'master' and 'branch' have no history in common
+        self.run_cmd('git checkout -b branch')
+        self.run_cmd('git commit --amend -m "rebased commit"')
+
+        # Run stylize with --diffbase=master, which is invalid since the current
+        # branch has no commits in common with master.  Stylize should fallback
+        # to doing a full reformat of the repository.
+        self.run_stylize(["--clang_style=Google", "--diffbase=master"])
+        self.assertTrue(self.file_changed('file.cpp', BAD_CPP))
+
+
 ## Test stylize's patch output feature
 class TestPatchOutput(Fixture):
     def test_patch_output(self):
