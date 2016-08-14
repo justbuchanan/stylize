@@ -40,7 +40,7 @@ def enumerate_changed_files(exclude=[], diffbase="origin/master"):
             ).decode('utf-8')
     except subprocess.CalledProcessError:
         # There was no common ancestor between @diffbase and @current_commit
-        return []
+        return None
 
     # get list of files that have changed since @ancestor.
     out = subprocess.check_output([
@@ -122,8 +122,8 @@ def main():
         # list to format/checkstyle.
 
         print("%s files that differ from %s..." % (verb, ARGS.diffbase))
-        changed_files = list(enumerate_changed_files(ARGS.exclude_dirs,
-                                                     ARGS.diffbase))
+        changed_files = enumerate_changed_files(ARGS.exclude_dirs,
+                                                ARGS.diffbase)
         if not changed_files:
             # We were unable to find a proper diffbase
             print("[ERR] Your diffbase does not share a common ancestor with '"
@@ -134,6 +134,7 @@ def main():
             print("%s all c++ and python files in the project..." % verb)
             files_to_format = enumerate_all_files(ARGS.exclude_dirs)
         else:
+            changed_files = list(changed_files)
             files_to_format = changed_files
 
             # Build a set of file extensions for which the config file has been modified.
