@@ -40,14 +40,7 @@ def enumerate_changed_files(exclude=[], diffbase="origin/master"):
             ).decode('utf-8')
     except subprocess.CalledProcessError:
         # There was no common ancestor between @diffbase and @current_commit
-        ancestor = subprocess.check_output(
-            ['git', 'rev-list', '--max-parents=0', current_git_commit()
-             ]).strip().decode('utf-8')
-        print("[ERR] Your diffbase: '" + str(diffbase) +
-              "' does not share a common ancestor with '" +
-              str(current_git_commit()) + "'. " + "Using '" + str(ancestor) +
-              "' instead.",
-              file=sys.stderr)
+        return []
 
     # get list of files that have changed since @ancestor.
     out = subprocess.check_output([
@@ -129,29 +122,38 @@ def main():
         # list to format/checkstyle.
 
         print("%s files that differ from %s..." % (verb, ARGS.diffbase))
-
         changed_files = list(enumerate_changed_files(ARGS.exclude_dirs,
                                                      ARGS.diffbase))
+        if not changed_files:
+            # We were unable to find a proper diffbase
+            print("[ERR] Your diffbase does not share a common ancestor with '"
+                  + str(current_git_commit()) +
+                  "'. Checkstyling all files instead.",
+                  file=sys.stderr)
 
-        files_to_format = changed_files
+            print("%s all c++ and python files in the project..." % verb)
+            files_to_format = enumerate_all_files(ARGS.exclude_dirs)
+        else:
+            files_to_format = changed_files
 
-        # Build a set of file extensions for which the config file has been modified.
-        exts_requiring_full_reformat = set()
-        for formatter in formatters:
-            if formatter.config_file_name in changed_files:
-                print(
-                    "Config file '%s' changed.  %s all files with extensions: %s"
-                    % (formatter.config_file_name, verb,
-                       str(formatter.file_extensions)))
-                exts_requiring_full_reformat |= set(formatter.file_extensions)
+            # Build a set of file extensions for which the config file has been modified.
+            exts_requiring_full_reformat = set()
+            for formatter in formatters:
+                if formatter.config_file_name in changed_files:
+                    print(
+                        "Config file '%s' changed.  %s all files with extensions: %s"
+                        % (formatter.config_file_name, verb,
+                           str(formatter.file_extensions)))
+                    exts_requiring_full_reformat |= set(
+                        formatter.file_extensions)
 
-        if len(exts_requiring_full_reformat) > 0:
-            files_with_relevant_extensions = filter(
-                lambda file: file_ext(file) in exts_requiring_full_reformat,
-                enumerate_all_files(ARGS.exclude_dirs))
-            # use set() to eliminate any duplicates
-            files_to_format = set(chain(changed_files,
-                                        files_with_relevant_extensions))
+            if len(exts_requiring_full_reformat) > 0:
+                files_with_relevant_extensions = filter(
+                    lambda file: file_ext(file) in exts_requiring_full_reformat,
+                    enumerate_all_files(ARGS.exclude_dirs))
+                # use set() to eliminate any duplicates
+                files_to_format = set(chain(changed_files,
+                                            files_with_relevant_extensions))
     else:
         print("%s all c++ and python files in the project..." % verb)
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
