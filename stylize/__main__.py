@@ -76,7 +76,8 @@ def main():
         "--check",
         action='store_true',
         help=
-        "Determine if all code is in accordance with the style configs, but don't fix them if they're not. A nonzero exit code indicates that some files don't meet the style requirements.")
+        "Determine if all code is in accordance with the style configs, but don't fix them if they're not. "
+        "A nonzero exit code indicates that some files don't meet the style requirements.")
     parser.add_argument("--exclude_dirs",
                         type=str,
                         default=[],
@@ -91,7 +92,8 @@ def main():
     parser.add_argument(
         "--diffbase",
         help=
-        "The git branch/tag/SHA1 to compare against.  If provided, only files that have changed since the diffbase will be scanned.")
+        "The git branch/tag/SHA1 to compare against. "
+        "If provided, only files that have changed since the diffbase will be scanned.")
     parser.add_argument("--version",
                         action='store_true',
                         help="Print version and exit.")
@@ -103,7 +105,8 @@ def main():
     for formatter in formatters:
         if formatter.get_command() == None:
             print(
-                "[ERR] A required dependency was not found. Check to see if clang-format is available on your path.")
+                "[ERR] A required dependency was not found."
+                " Check to see if clang-format is available on your path.")
             return 1
         formatter.add_args(parser)
         for ext in formatter.file_extensions:
