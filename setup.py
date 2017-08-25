@@ -19,6 +19,6 @@ setup(name='stylize',
                    'Programming Language :: Python :: 3.4',
                    'Topic :: Software Development :: Quality Assurance', ],
       entry_points={'console_scripts': ['stylize = stylize.__main__:main'], },
-      install_requires=['yapf==0.6.0'],
+      install_requires=['yapf'],
       test_suite='nose.collector',
       tests_require=['nose', 'coverage'], )
