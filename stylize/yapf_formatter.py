@@ -23,7 +23,7 @@ class YapfFormatter(Formatter):
 
     def run(self, args, filepath, check=False, calc_diff=False):
         logfile = open("/dev/null", "w")
-        style_arg = "--style=%s" % (args.yapf_style or "pep8")
+        style_arg = "--style=%s" % (args.yapf_style or "google")
         popen_args = ["yapf", style_arg, filepath]
         if check or calc_diff:
             # write style-compliant version of file to a tmp directory
