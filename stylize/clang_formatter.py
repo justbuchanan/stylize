@@ -21,7 +21,8 @@ class ClangFormatter(Formatter):
             type=str,
             default=None,
             help=
-            "The style to pass to clang-format.  See `clang-format --help` for more info.")
+            "The style to pass to clang-format.  See `clang-format --help` for more info."
+        )
 
     def run(self, args, filepath, check=False, calc_diff=False):
         logfile = open("/dev/null", "w")
@@ -52,9 +53,8 @@ class ClangFormatter(Formatter):
             return noncompliant, patch
         else:
             md5_before = file_md5(filepath)
-            proc = subprocess.Popen(popen_args + ['-i'],
-                                    stdout=logfile,
-                                    stderr=logfile)
+            proc = subprocess.Popen(
+                popen_args + ['-i'], stdout=logfile, stderr=logfile)
             proc.communicate()
             md5_after = file_md5(filepath)
             return (md5_before != md5_after), None
@@ -64,9 +64,10 @@ class ClangFormatter(Formatter):
             return "clang-format"
         # Run the next command in bash, as we need the bash builtin, compgen
         possible_command = subprocess.Popen(
-            ["bash", "-c",
-             "compgen -A function -abck | grep -E clang-format-[0-9]+\.[0-9]+ | tail -n 1"
-             ],
+            [
+                "bash", "-c",
+                "compgen -A function -abck | grep -E clang-format-[0-9]+\.[0-9]+ | tail -n 1"
+            ],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE).stdout.read().decode("utf-8").strip()
         if possible_command != "":

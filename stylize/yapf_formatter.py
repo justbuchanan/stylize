@@ -30,9 +30,8 @@ class YapfFormatter(Formatter):
             outfile_path = os.path.join(self._tempdir, filepath)
             os.makedirs(os.path.dirname(outfile_path), exist_ok=True)
             outfile = open(outfile_path, 'w')
-            proc = subprocess.Popen(popen_args,
-                                    stdout=outfile,
-                                    stderr=subprocess.PIPE)
+            proc = subprocess.Popen(
+                popen_args, stdout=outfile, stderr=subprocess.PIPE)
             out, err = proc.communicate()
             outfile.close()
 
@@ -49,9 +48,8 @@ class YapfFormatter(Formatter):
             return noncompliant, patch
         else:
             md5_before = file_md5(filepath)
-            proc = subprocess.Popen(popen_args + ['-i'],
-                                    stdout=logfile,
-                                    stderr=logfile)
+            proc = subprocess.Popen(
+                popen_args + ['-i'], stdout=logfile, stderr=logfile)
             proc.communicate()
             md5_after = file_md5(filepath)
             return (md5_before != md5_after), None

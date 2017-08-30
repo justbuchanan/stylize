@@ -26,8 +26,9 @@ def file_ext(filepath):
 
 def get_terminal_width():
     try:
-        return struct.unpack('hh', fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ,
-                                               '1234'))[1]
+        return struct.unpack('hh',
+                             fcntl.ioctl(sys.stdout, termios.TIOCGWINSZ,
+                                         '1234'))[1]
     except OSError as e:
         return 80
 
@@ -43,8 +44,11 @@ def calculate_diff(old_file, new_file, label):
         raise RuntimeError("New file doesn't exist")
     if label.startswith('./'): label = label[2:]
     diffproc = subprocess.Popen(
-        ['diff', '-Naur', old_file, new_file, '-L', 'a/%s' % label, '-L',
-         'b/%s' % label],
+        [
+            'diff', '-Naur', old_file, new_file, '-L',
+            'a/%s' % label, '-L',
+            'b/%s' % label
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     out, err = diffproc.communicate()

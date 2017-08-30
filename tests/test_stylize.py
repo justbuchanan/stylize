@@ -34,11 +34,8 @@ class Fixture(unittest.TestCase):
     @nottest
     def run_cmd(self, cmd):
         logfile = open(self.tempdir + "/test-log.txt", 'w')
-        p = subprocess.Popen(cmd,
-                             shell=True,
-                             cwd=self.tempdir,
-                             stdout=logfile,
-                             stderr=logfile)
+        p = subprocess.Popen(
+            cmd, shell=True, cwd=self.tempdir, stdout=logfile, stderr=logfile)
         p.communicate()
         logfile.close()
         return p.returncode
@@ -57,8 +54,9 @@ class TestFormatCpp(Fixture):
         self.write_file('bad.cpp', BAD_CPP)
         self.write_file('good.cpp', GOOD_CPP)
 
-        self.assertNotEqual(
-            0, self.run_stylize(["--clang_style=Google", "--check"]))
+        self.assertNotEqual(0,
+                            self.run_stylize(
+                                ["--clang_style=Google", "--check"]))
 
         self.assertEqual(0, self.run_stylize(["--clang_style=Google"]))
         self.assertTrue(self.file_changed('bad.cpp', BAD_CPP))
@@ -129,8 +127,10 @@ class TestDiffbaseExclude(Fixture):
         self.run_cmd("git commit -m 'added poorly-formatted cpp file'")
         self.write_file('dir1/bad2.cpp', BAD_CPP)
 
-        self.run_stylize(["--clang_style=Google", "--diffbase=master",
-                          "--exclude_dirs", "dir1"])
+        self.run_stylize([
+            "--clang_style=Google", "--diffbase=master", "--exclude_dirs",
+            "dir1"
+        ])
         self.assertFalse(self.file_changed('dir1/bad1.cpp', BAD_CPP))
         self.assertFalse(self.file_changed('dir1/bad2.cpp', BAD_CPP))
 
@@ -171,9 +171,8 @@ class TestPatchOutput(Fixture):
         self.run_cmd("git commit -m 'first commit'")
 
         # Tell stylize to generate a patch file and check it
-        self.run_stylize([
-            "--clang_style=Google", "--output_patch_file=pretty.patch"
-        ])
+        self.run_stylize(
+            ["--clang_style=Google", "--output_patch_file=pretty.patch"])
         self.assertTrue(os.path.isfile('pretty.patch'))
 
         # ensure that stylize didn't change any files (note that the patch file

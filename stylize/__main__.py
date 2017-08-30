@@ -16,9 +16,9 @@ import sys
 
 def enumerate_all_files(exclude=[], directory='.'):
     for root, dirs, files in os.walk(directory, topdown=True):
-        dirs[:] = [d
-                   for d in dirs
-                   if os.path.abspath(root + '/' + d) not in exclude]
+        dirs[:] = [
+            d for d in dirs if os.path.abspath(root + '/' + d) not in exclude
+        ]
         if root.startswith('./'): root = root[2:]
         for f in files:
             yield root + '/' + f
@@ -26,8 +26,8 @@ def enumerate_all_files(exclude=[], directory='.'):
 
 ## Returns the checksum of the currently-checked-out commit
 def current_git_commit():
-    return subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip(
-    ).decode('utf-8')
+    return subprocess.check_output(['git', 'rev-parse',
+                                    'HEAD']).strip().decode('utf-8')
 
 
 ## Yields all files that differ from the branching point with @diffbase or are
@@ -36,8 +36,8 @@ def enumerate_changed_files(exclude=[], diffbase="origin/master"):
     try:
         # try to find common ancestor between @diffbase and @current_commit
         ancestor = subprocess.check_output(
-            ['git', 'merge-base', current_git_commit(), diffbase]).strip(
-            ).decode('utf-8')
+            ['git', 'merge-base',
+             current_git_commit(), diffbase]).strip().decode('utf-8')
     except subprocess.CalledProcessError:
         # There was no common ancestor between @diffbase and @current_commit
         print(
@@ -49,20 +49,20 @@ def enumerate_changed_files(exclude=[], diffbase="origin/master"):
         return
 
     # get list of files that have changed since @ancestor.
-    out = subprocess.check_output([
-        "git", "--no-pager", "diff", "--name-only", ancestor
-    ])
+    out = subprocess.check_output(
+        ["git", "--no-pager", "diff", "--name-only", ancestor])
     # Also include un-committed files.
-    out += subprocess.check_output(['git', 'ls-files', '--others',
-                                    '--exclude-standard'])
+    out += subprocess.check_output(
+        ['git', 'ls-files', '--others', '--exclude-standard'])
 
     # enumerate and yield relevant results
     for line in out.decode("utf-8").splitlines():
         filepath = line.rstrip()
         abspath = os.path.abspath(filepath)
         if os.path.exists(filepath):
-            if not any(abspath.startswith(excluded_dir)
-                       for excluded_dir in exclude):
+            if not any(
+                    abspath.startswith(excluded_dir)
+                    for excluded_dir in exclude):
                 yield filepath
 
 
@@ -77,26 +77,28 @@ def main():
         action='store_true',
         help=
         "Determine if all code is in accordance with the style configs, but don't fix them if they're not. "
-        "A nonzero exit code indicates that some files don't meet the style requirements.")
-    parser.add_argument("--exclude_dirs",
-                        type=str,
-                        default=[],
-                        nargs="+",
-                        help="A list of directories to exclude")
+        "A nonzero exit code indicates that some files don't meet the style requirements."
+    )
+    parser.add_argument(
+        "--exclude_dirs",
+        type=str,
+        default=[],
+        nargs="+",
+        help="A list of directories to exclude")
     parser.add_argument(
         "--output_patch_file",
         type=str,
         default=None,
         help=
-        "If specified, a patch file is generated at the given path that, when aplied to the project, will fix all style mistakes.")
+        "If specified, a patch file is generated at the given path that, when aplied to the project, will fix all style mistakes."
+    )
     parser.add_argument(
         "--diffbase",
-        help=
-        "The git branch/tag/SHA1 to compare against. "
-        "If provided, only files that have changed since the diffbase will be scanned.")
-    parser.add_argument("--version",
-                        action='store_true',
-                        help="Print version and exit.")
+        help="The git branch/tag/SHA1 to compare against. "
+        "If provided, only files that have changed since the diffbase will be scanned."
+    )
+    parser.add_argument(
+        "--version", action='store_true', help="Print version and exit.")
 
     formatters = [ClangFormatter(), YapfFormatter()]
 
@@ -104,9 +106,8 @@ def main():
     formatters_by_ext = {}
     for formatter in formatters:
         if formatter.get_command() == None:
-            print(
-                "[ERR] A required dependency was not found."
-                " Check to see if clang-format is available on your path.")
+            print("[ERR] A required dependency was not found."
+                  " Check to see if clang-format is available on your path.")
             return 1
         formatter.add_args(parser)
         for ext in formatter.file_extensions:
@@ -132,8 +133,8 @@ def main():
 
         print("%s files that differ from %s..." % (verb, ARGS.diffbase))
 
-        changed_files = list(enumerate_changed_files(ARGS.exclude_dirs,
-                                                     ARGS.diffbase))
+        changed_files = list(
+            enumerate_changed_files(ARGS.exclude_dirs, ARGS.diffbase))
 
         files_to_format = changed_files
 
@@ -152,8 +153,8 @@ def main():
                 lambda file: file_ext(file) in exts_requiring_full_reformat,
                 enumerate_all_files(ARGS.exclude_dirs))
             # use set() to eliminate any duplicates
-            files_to_format = set(chain(changed_files,
-                                        files_with_relevant_extensions))
+            files_to_format = set(
+                chain(changed_files, files_with_relevant_extensions))
     else:
         print("%s all c++ and python files in the project..." % verb)
         files_to_format = enumerate_all_files(ARGS.exclude_dirs)
@@ -187,9 +188,10 @@ def main():
             status = "✗" if ARGS.check else "✔"
             print_aligned(filepath, status)
         else:
-            print_aligned("> %s: %s" % (ext[1:], filepath),
-                          "[%d]" % file_scan_count,
-                          end="\r")
+            print_aligned(
+                "> %s: %s" % (ext[1:], filepath),
+                "[%d]" % file_scan_count,
+                end="\r")
 
     # Use all the cores!
     workers = ThreadPool()
@@ -201,8 +203,8 @@ def main():
                       (file_change_count, file_scan_count), "")
         retcode = 0 if file_change_count == 0 else 1
     else:
-        print_aligned("[%d / %d] files formatted" %
-                      (file_change_count, file_scan_count), "")
+        print_aligned("[%d / %d] files formatted" % (file_change_count,
+                                                     file_scan_count), "")
         retcode = 0
 
     if ARGS.output_patch_file:
@@ -212,7 +214,8 @@ def main():
                 patchfile.write(patch)
         else:
             print(
-                "Skipping patch file generation, all files are style-compliant.")
+                "Skipping patch file generation, all files are style-compliant."
+            )
 
     return retcode
 
