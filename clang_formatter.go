@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	clangStyleArg = flag.String("clang_style", "", "Style to pass to clang-format. See `clang-format --help` for more info.")
+	clangStyleFlag = flag.String("clang_style", "", "Style to pass to clang-format. See `clang-format --help` for more info.")
 )
 
 type ClangFormatter struct{}
@@ -21,8 +21,8 @@ func (F *ClangFormatter) FileExtensions() []string {
 }
 
 func maybeAppendClangStyleArgs(args []string) []string {
-	if len(*clangStyleArg) > 0 {
-		return append(args, "-style", *clangStyleArg)
+	if len(*clangStyleFlag) > 0 {
+		return append(args, "-style", *clangStyleFlag)
 	}
 	return args
 }
