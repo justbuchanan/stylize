@@ -175,10 +175,12 @@ func TestCollectPatch(t *testing.T) {
 func runCmd(t *testing.T, dir string, bin string, args ...string) {
 	t.Logf("cmd: %s %s", bin, strings.Join(args, " "))
 	cmd := exec.Command(bin, args...)
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	cmd.Dir = dir
 	err := cmd.Run()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal(err, stderr.String())
 	}
 }
 
