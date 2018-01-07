@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/pborman/getopt/v2"
+	"flag"
 	"io"
 	"log"
 	"os"
@@ -9,13 +9,13 @@ import (
 )
 
 func main() {
-	inPlaceFlag := getopt.BoolLong("in_place", 'i', "If enabled, formats files in place. Default behavior is just to check which files need formatting.")
-	patchFileFlag := getopt.StringLong("output_patch_file", 'o', "", "Path to output patch to. If '-', writes to stdout.")
-	dirFlag := getopt.StringLong("dir", 'd', ".", "Directory to recursively format.")
-	excludeDirFlag := getopt.StringLong("exclude_dirs", 'e', "", "Directories to exclude")
-	diffbaseFlag := getopt.StringLong("git_diffbase", 'g', "", "If provided, stylize only looks at files that differ from the given commit/branch.")
-	parallelismFlag := getopt.IntLong("jobs", 'j', 8, "Number of files to process in parallel")
-	getopt.Parse()
+	inPlaceFlag := flag.Bool("i", false, "If enabled, formats files in place. Default behavior is just to check which files need formatting.")
+	patchFileFlag := flag.String("patch_output", "", "Path to output patch to. If '-', writes to stdout.")
+	dirFlag := flag.String("dir", ".", "Directory to recursively format.")
+	excludeDirFlag := flag.String("exclude_dirs", "", "Directories to exclude")
+	diffbaseFlag := flag.String("git_diffbase", "", "If provided, stylize only looks at files that differ from the given commit/branch.")
+	parallelismFlag := flag.Int("j", 8, "Number of files to process in parallel")
+	flag.Parse()
 
 	var excludeDirs []string
 	if len(*excludeDirFlag) > 0 {

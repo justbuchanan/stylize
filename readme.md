@@ -18,7 +18,7 @@ stylize.v1 -i
 stylize.v1 -i --exclude_dirs external
 
 # generate a patch
-stylize.v1 -o patch.txt
+stylize.v1 --patch_output patch.txt
 
 # reformat files that differ from origin/master
 stylize.v1 -i --git_diffbase origin/master
