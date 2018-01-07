@@ -182,6 +182,10 @@ func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan strin
 	go func() {
 		for file := range fileChan {
 			ext := filepath.Ext(file)
+			if len(ext) == 0 {
+				// if file doesn't have an extension, use the file name
+				ext = filepath.Base(file)
+			}
 			formatter := formatters[ext]
 			if formatter == nil {
 				continue

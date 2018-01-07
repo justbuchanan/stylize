@@ -1,3 +1,9 @@
+--- a/BUILD
++++ b/BUILD
+@@ -1,2 +1,2 @@
+-py_binary(name='hello')
++py_binary(name = "hello")
+ 
 --- a/bad.BUILD
 +++ b/bad.BUILD
 @@ -1,2 +1,2 @@
