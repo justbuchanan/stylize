@@ -143,9 +143,6 @@ func runFormatter(rootDir, file string, formatter Formatter, inPlace bool) Forma
 // Reads all incoming results and forwards them to the output channel. When all
 // results have been read, writes the patch to the output writer.
 func CollectPatch(results <-chan FormattingResult, patchOut io.Writer) <-chan FormattingResult {
-	var wg sync.WaitGroup
-	wg.Add(1)
-
 	resultsOut := make(chan FormattingResult)
 
 	go func() {
