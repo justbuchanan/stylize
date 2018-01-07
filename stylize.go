@@ -63,6 +63,9 @@ func IterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
 	return files
 }
 
+// Returns a list of files that have changed since the given git diffbase. These
+// file paths are relative to the root of the git repo, not necessarily the
+// given rootDir.
 func gitChangedFiles(rootDir, diffbase string) ([]string, error) {
 	cmd := exec.Command("git", "--no-pager", "diff", "--name-only", diffbase)
 	cmd.Dir = rootDir
@@ -83,7 +86,6 @@ func gitChangedFiles(rootDir, diffbase string) ([]string, error) {
 // Finds files that have been modified since the common ancestor of HEAD and
 // diffbase and sends them onto the returned channel.
 // @return file paths relative to rootDir
-// TODO: if a config file changes, rerun formatting on *all relevant files
 func IterateGitChangedFiles(rootDir string, excludeDirs []string, diffbase string) (<-chan string, error) {
 	changedFiles, err := gitChangedFiles(rootDir, diffbase)
 	if err != nil {
@@ -214,6 +216,9 @@ func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan strin
 	return resultOut
 }
 
+// @param gitDiffbase If provided, only looks at files that differ from the
+//     diffbase. Otherwise looks at all files.
+// @param formatters A map of file extension -> formatter
 // @return (uglyCount, totalCount, errCount)
 func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) (int, int, int) {
 	if inPlace && patchOut != nil {
@@ -250,7 +255,7 @@ func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []
 	}
 
 	// Calculate terminal width so text can be padded appropriately for line-
-	// overwriting
+	// overwriting (done only when output is a terminal).
 	var termWidth int
 	isTerm := isTerminal(os.Stderr)
 	if isTerm {
@@ -280,7 +285,8 @@ func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []
 			}
 		} else if isTerm {
 			// Print a \r at the end so that the next line printed overwrites
-			// this one.
+			// this one. Printing-in-place shows that the program is working,
+			// but doesn't fill up the screen with unnecessary info
 			txt := fmt.Sprintf("Checked '%s'", r.FilePath)
 			fmt.Fprintf(os.Stderr, "%s\r", padToWidth(txt, termWidth))
 		}

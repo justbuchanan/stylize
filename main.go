@@ -2,36 +2,11 @@ package main
 
 import (
 	"flag"
-	"gopkg.in/yaml.v2"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 )
-
-type Config struct {
-	FormattersByExt map[string]string `yaml:"formatters"`
-	ExcludeDirs     []string          `yaml:"exclude_dirs"`
-
-	// TODO: do better
-	ClangStyle string `yaml:"clang_style"`
-	YapfStyle  string `yaml:"yapf_style"`
-}
-
-func LoadConfig(file string) (*Config, error) {
-	fileContent, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil, err
-	}
-
-	var cfg Config
-	err = yaml.Unmarshal(fileContent, &cfg)
-	if err != nil {
-		return nil, err
-	}
-	return &cfg, nil
-}
 
 func main() {
 	inPlaceFlag := flag.Bool("i", false, "If enabled, formats files in place. Default behavior is just to check which files need formatting.")
