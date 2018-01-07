@@ -17,7 +17,7 @@ func init() {
 }
 
 func (F *ClangFormatter) FileExtensions() []string {
-	return []string{".h", ".hpp", ".c", ".cc", ".cpp", ".proto", ".m", ".java", ".js"}
+	return []string{".h", ".hpp", ".c", ".cc", ".cpp", ".proto", ".java", ".js"}
 }
 
 func maybeAppendClangStyleArgs(args []string) []string {
