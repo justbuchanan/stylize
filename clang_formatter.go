@@ -38,6 +38,7 @@ func (F *ClangFormatter) FormatToBuffer(in io.Reader, out io.Writer) error {
 }
 
 func (F *ClangFormatter) FormatInPlace(absPath string) error {
-	args := maybeAppendClangStyleArgs([]string{"clang-format", "-i", absPath})
+	args := maybeAppendClangStyleArgs([]string{"clang-format"})
+	args = append(args, "-i", absPath)
 	return runIOCommand(args, nil, nil)
 }
