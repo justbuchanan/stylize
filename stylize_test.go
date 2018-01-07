@@ -169,7 +169,7 @@ func TestCollectPatch(t *testing.T) {
 	for _ = range resultsAfterPatch {
 	}
 
-	expected := "diff1\ndiff2\ndiff3\ndiff4\n"
+	expected := "diff1\ndiff2\n\ndiff3\ndiff4\n\n"
 	if expected != patchOut.String() {
 		t.Logf("Expected: %s", expected)
 		t.Fatalf("Got: %s", patchOut.String())

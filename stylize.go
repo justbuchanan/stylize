@@ -167,7 +167,7 @@ func CollectPatch(results <-chan FormattingResult, patchOut io.Writer) <-chan Fo
 
 		// write patch output
 		for _, r := range resultList {
-			patchOut.Write([]byte(r.Patch))
+			patchOut.Write([]byte(r.Patch + "\n"))
 		}
 	}()
 
