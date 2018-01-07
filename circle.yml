@@ -1,26 +1,44 @@
-machine:
-    python:
-        version: 3.4.2
+version: 2
+jobs:
+    build:
+        working_directory: /go/src/github.com/justbuchanan/stylize
+        docker:
+            - image: justbuchanan/docker-archlinux
+        steps:
+            # setup GOPATH
+            - run: echo 'export GOPATH=/go' >> $BASH_ENV
+            - run: echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
 
-dependencies:
-    # Remove cached python environment.  When using the cache, there were issues
-    # running `setup.py install` - it kept hitting an error:
-    # AttributeError: _Distribution__dep_map
-    pre:
-        - rm -r /home/ubuntu/virtualenvs
-    post:
-        - sudo wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
-        - sudo add-apt-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.5 main"
-        - sudo apt-get update
-        - sudo apt-get install clang-format-3.5
-        - pip3 install coveralls
+            - run: echo 'export CIRCLE_ARTIFACTS=/tmp/artifacts' >> $BASH_ENV
+            - run: mkdir -p $CIRCLE_ARTIFACTS
 
-test:
-    pre:
-        - git config --global user.name "Circle CI"
-        - git config --global user.email "justbuchanan@gmail.com"
-    override:
-        # Run unit tests and upload code coverage to coveralls.io
-        - coverage run --include="./stylize/*" -m nose
-        - coveralls
-        - stylize --yapf_style=.style.yapf --check --exclude_dirs=build --output_patch_file="$CIRCLE_ARTIFACTS/clean.patch"
+            # install deps
+            - run: pacman -Sy --noconfirm clang python-pip go git
+            - run: pip install yapf
+            - run: go get -u github.com/bazelbuild/buildtools/buildifier
+            - run: go get -u github.com/justbuchanan/ci-status
+
+
+            - checkout
+
+            # setup git
+            - run: git config --global user.email "ci@circle"
+            - run: git config --global user.name "Circle Ci"
+
+            # install stylize deps
+            - run: go get -t ./...
+
+            - run: ci-status --context build --description "go build" "go build"
+            - run: ci-status --context tests --description "go test" "go test . -v"
+
+            - store_artifacts:
+                path: /tmp/artifacts
+
+workflows:
+  version: 2
+  all:
+    jobs:
+      - build
+
+# TODO: coveralls
+# TODO: check code style of this repo
