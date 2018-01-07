@@ -143,7 +143,7 @@ func TestGitDiffbase(t *testing.T) {
 	}
 
 	// Remove directory if test passed
-	defer os.RemoveAll(tmp)
+	os.RemoveAll(tmp)
 }
 
 func TestCollectPatch(t *testing.T) {
