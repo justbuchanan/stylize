@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -84,6 +85,66 @@ func TestInPlace(t *testing.T) {
 	if !isDirectoryFormatted(t, dir, exclude) {
 		t.Fatal("Second run of formatter showed a diff. Everything should have been fixed in-place the first time.")
 	}
+}
+
+func TestInPlaceWithConfig(t *testing.T) {
+	tmp, err := ioutil.TempDir("", "stylize")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("tmp dir: " + tmp)
+
+	// copy testdata to output
+	cpCmd := exec.Command("cp", "-r", "testdata/", tmp)
+	err = cpCmd.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := path.Join(tmp, "testdata")
+
+	cfgPath := path.Join(dir, ".stylize.yml")
+	err = ioutil.WriteFile(cfgPath, []byte("---\nformatters:\n  .py: yapf\nexclude_dirs:\n  - exclude"), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("Wrote config file: %s", cfgPath)
+
+	cfg, err := LoadConfig(cfgPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("Read config file")
+
+	t.Log("exclude: " + strings.Join(cfg.ExcludeDirs, ","))
+	for i, edir := range cfg.ExcludeDirs {
+		cfg.ExcludeDirs[i] = filepath.Join(dir, edir)
+	}
+	t.Log("exclude: " + strings.Join(cfg.ExcludeDirs, ","))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	formatters := LoadFormattersFromMapping(cfg.FormattersByExt)
+
+	// run in-place formatting
+	numChanged, numTotal, numErr := StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
+	t.Logf("%d, %d, %d", numChanged, numTotal, numErr)
+
+	if numChanged != 1 {
+		t.Fatal("One file should have changed")
+	}
+
+	numChanged, numTotal, numErr = StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
+
+	t.Logf("%d, %d, %d", numChanged, numTotal, numErr)
+
+	if numChanged != 0 {
+		t.Fatal("No files should have changed")
+	}
+
+	os.RemoveAll(tmp)
 }
 
 func TestGitDiffbase(t *testing.T) {

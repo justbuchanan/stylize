@@ -34,7 +34,7 @@ func fileIsExcluded(file string, excludeDirs []string) bool {
 // Walks the given directory and sends all non-excluded files to the returned channel.
 // @param rootDir absolute path to root directory
 // @return file paths relative to rootDir
-func iterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
+func IterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
 	files := make(chan string)
 
 	go func() {
@@ -67,7 +67,7 @@ func iterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
 // diffbase and sends them onto the returned channel.
 // @return file paths relative to rootDir
 // TODO: if a config file changes, rerun formatting on *all relevant files
-func iterateGitChangedFiles(rootDir string, excludeDirs []string, diffbase string) (<-chan string, error) {
+func IterateGitChangedFiles(rootDir string, excludeDirs []string, diffbase string) (<-chan string, error) {
 	cmd := exec.Command("git", "--no-pager", "diff", "--name-only", diffbase)
 	cmd.Dir = rootDir
 	var out bytes.Buffer
@@ -213,7 +213,7 @@ func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []
 		log.Fatal("Patch output writer should only be provided in non-inplace runs")
 	}
 	if !filepath.IsAbs(rootDir) {
-		log.Fatalf("root directory be an absolute path: '%s'", rootDir)
+		log.Fatalf("root directory should be an absolute path: '%s'", rootDir)
 	}
 
 	for _, excl := range excludeDirs {
@@ -226,12 +226,12 @@ func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []
 	var err error
 	var fileChan <-chan string
 	if len(gitDiffbase) > 0 {
-		fileChan, err = iterateGitChangedFiles(rootDir, excludeDirs, gitDiffbase)
+		fileChan, err = IterateGitChangedFiles(rootDir, excludeDirs, gitDiffbase)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		fileChan = iterateAllFiles(rootDir, excludeDirs)
+		fileChan = IterateAllFiles(rootDir, excludeDirs)
 	}
 
 	// run formatter on all files
