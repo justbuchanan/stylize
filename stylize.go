@@ -216,44 +216,7 @@ func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan strin
 	return resultOut
 }
 
-// @param gitDiffbase If provided, only looks at files that differ from the
-//     diffbase. Otherwise looks at all files.
-// @param formatters A map of file extension -> formatter
-// @return (uglyCount, totalCount, errCount)
-func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) (int, int, int) {
-	if inPlace && patchOut != nil {
-		log.Fatal("Patch output writer should only be provided in non-inplace runs")
-	}
-	if !filepath.IsAbs(rootDir) {
-		log.Fatalf("root directory should be an absolute path: '%s'", rootDir)
-	}
-
-	for _, excl := range excludeDirs {
-		if !filepath.IsAbs(excl) {
-			log.Fatal("exclude directories should be absolute")
-		}
-	}
-
-	// setup file source
-	var err error
-	var fileChan <-chan string
-	if len(gitDiffbase) > 0 {
-		fileChan, err = IterateGitChangedFiles(rootDir, excludeDirs, gitDiffbase)
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		fileChan = IterateAllFiles(rootDir, excludeDirs)
-	}
-
-	// run formatter on all files
-	results := RunFormattersOnFiles(formatters, fileChan, rootDir, inPlace, parallelism)
-
-	// write patch to output if requested
-	if patchOut != nil {
-		results = CollectPatch(results, patchOut)
-	}
-
+func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) (int, int, int) {
 	// Calculate terminal width so text can be padded appropriately for line-
 	// overwriting (done only when output is a terminal).
 	var termWidth int
@@ -299,4 +262,45 @@ func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []
 	}
 
 	return uglyCount, totalCount, errCount
+}
+
+// @param gitDiffbase If provided, only looks at files that differ from the
+//     diffbase. Otherwise looks at all files.
+// @param formatters A map of file extension -> formatter
+// @return (uglyCount, totalCount, errCount)
+func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) (int, int, int) {
+	if inPlace && patchOut != nil {
+		log.Fatal("Patch output writer should only be provided in non-inplace runs")
+	}
+	if !filepath.IsAbs(rootDir) {
+		log.Fatalf("root directory should be an absolute path: '%s'", rootDir)
+	}
+
+	for _, excl := range excludeDirs {
+		if !filepath.IsAbs(excl) {
+			log.Fatal("exclude directories should be absolute")
+		}
+	}
+
+	// setup file source
+	var err error
+	var fileChan <-chan string
+	if len(gitDiffbase) > 0 {
+		fileChan, err = IterateGitChangedFiles(rootDir, excludeDirs, gitDiffbase)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		fileChan = IterateAllFiles(rootDir, excludeDirs)
+	}
+
+	// run formatter on all files
+	results := RunFormattersOnFiles(formatters, fileChan, rootDir, inPlace, parallelism)
+
+	// write patch to output if requested
+	if patchOut != nil {
+		results = CollectPatch(results, patchOut)
+	}
+
+	return LogActionsAndCollectStats(results, inPlace)
 }
