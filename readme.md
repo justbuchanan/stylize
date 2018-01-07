@@ -7,22 +7,29 @@ It's a wrapper over other checkstyle programs such as `clang-format` or `yapf` t
 
 ## Usage
 
-~~~{.sh}
+~~~.sh
 # install
 go get -u github.com/justbuchanan/stylize
 
-# format all code in-place (note: make a git commit before doing this - otherwise there's no undo button)
+# check files and write a patch file to 'patch.txt'. This patch file shows what
+# changes the formatter would have made if run with the `-i` (in-place) flag.
+# You can also apply this generated patch to the repo using `git apply`.
+stylize --patch_output patch.txt
+
+# format all code in-place
+# note: make a git commit before doing this - there's no undo button
 stylize -i
 
 # format code in place, excluding the 'external' directory
 stylize -i --exclude_dirs external
 
-# generate a patch
-stylize --patch_output patch.txt
-
-# reformat files that differ from origin/master
+# reformat only files that differ from origin/master
 stylize -i --git_diffbase origin/master
 ~~~
+
+## Configuration
+
+By default, `stylize` looks for a config file named `.stylize.yml` in the current directory. A different file can be specified with the `--config` flag. See `config.go` for what options are available and see this repo's `.stylize.yml` file as an example.
 
 
 ## Supported formatters
