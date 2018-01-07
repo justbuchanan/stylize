@@ -63,26 +63,36 @@ func IterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
 	return files
 }
 
-// Finds files that have been modified since the common ancestor of HEAD and
-// diffbase and sends them onto the returned channel.
-// @return file paths relative to rootDir
-// TODO: if a config file changes, rerun formatting on *all relevant files
-func IterateGitChangedFiles(rootDir string, excludeDirs []string, diffbase string) (<-chan string, error) {
+func gitChangedFiles(rootDir, diffbase string) ([]string, error) {
 	cmd := exec.Command("git", "--no-pager", "diff", "--name-only", diffbase)
 	cmd.Dir = rootDir
-	var out bytes.Buffer
+	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
+	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, stderr.String())
 	}
 
 	// note: these paths are all relative to the git root directory
 	changedFiles := strings.Split(out.String(), "\n")
 
+	return changedFiles, nil
+}
+
+// Finds files that have been modified since the common ancestor of HEAD and
+// diffbase and sends them onto the returned channel.
+// @return file paths relative to rootDir
+// TODO: if a config file changes, rerun formatting on *all relevant files
+func IterateGitChangedFiles(rootDir string, excludeDirs []string, diffbase string) (<-chan string, error) {
+	changedFiles, err := gitChangedFiles(rootDir, diffbase)
+	if err != nil {
+		return nil, err
+	}
+
 	// find ancestor directory of rootDir that has the .git directory
 	var gitRootOut, stderr bytes.Buffer
-	cmd = exec.Command("git", "rev-parse", "--show-toplevel")
+	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
 	cmd.Stdout = &gitRootOut
 	cmd.Stderr = &stderr
 	cmd.Dir = rootDir
