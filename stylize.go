@@ -208,7 +208,7 @@ func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan strin
 }
 
 // @return (uglyCount, totalCount, errCount)
-func StylizeMain(rootDir string, excludeDirs []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) (int, int, int) {
+func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) (int, int, int) {
 	if inPlace && patchOut != nil {
 		log.Fatal("Patch output writer should only be provided in non-inplace runs")
 	}
@@ -235,7 +235,6 @@ func StylizeMain(rootDir string, excludeDirs []string, gitDiffbase string, patch
 	}
 
 	// run formatter on all files
-	formatters := loadFormatters()
 	results := RunFormattersOnFiles(formatters, fileChan, rootDir, inPlace, parallelism)
 
 	// write patch to output if requested

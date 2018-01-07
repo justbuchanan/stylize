@@ -43,7 +43,7 @@ func TestCreatePatch(t *testing.T) {
 		patchOut = &patchBuffer
 	}
 
-	StylizeMain(absPathOrDie("testdata"), []string{absPathOrDie("testdata/exclude")}, "", patchOut, false, PARALLELISM)
+	StylizeMain(LoadDefaultFormatters(), absPathOrDie("testdata"), []string{absPathOrDie("testdata/exclude")}, "", patchOut, false, PARALLELISM)
 
 	if !*generateGoldens {
 		assertGoldenMatch(t, goldenFile, patchBuffer.String())
@@ -53,7 +53,7 @@ func TestCreatePatch(t *testing.T) {
 }
 
 func isDirectoryFormatted(t *testing.T, dir string, exclude []string) bool {
-	numFormatted, _, numError := StylizeMain(dir, exclude, "", nil, false, PARALLELISM)
+	numFormatted, _, numError := StylizeMain(LoadDefaultFormatters(), dir, exclude, "", nil, false, PARALLELISM)
 	return numFormatted == 0 && numError == 0
 }
 
@@ -79,7 +79,7 @@ func TestInPlace(t *testing.T) {
 	exclude := []string{path.Join(dir, "exclude")}
 	t.Log("exclude: " + strings.Join(exclude, ","))
 	// run in-place formatting
-	StylizeMain(dir, exclude, "", nil, true, PARALLELISM)
+	StylizeMain(LoadDefaultFormatters(), dir, exclude, "", nil, true, PARALLELISM)
 
 	if !isDirectoryFormatted(t, dir, exclude) {
 		t.Fatal("Second run of formatter showed a diff. Everything should have been fixed in-place the first time.")
@@ -118,7 +118,7 @@ func TestGitDiffbase(t *testing.T) {
 	t.Log("exclude: " + strings.Join(exclude, ","))
 
 	// run stylize with diffbase provided
-	numFormatted, _, numErr := StylizeMain(dir, exclude, "master", nil, true, PARALLELISM)
+	numFormatted, _, numErr := StylizeMain(LoadDefaultFormatters(), dir, exclude, "master", nil, true, PARALLELISM)
 	if numFormatted != 1 {
 		t.Fatalf("Stylize should have formatted one and only one file. Instead it was %d", numFormatted)
 	}

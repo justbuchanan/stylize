@@ -72,19 +72,40 @@ func CreatePatchWithFormatter(F Formatter, wdir, file string) (string, error) {
 	return diff, nil
 }
 
+// Returns a map of file extension to formatter for the ones specied in the
+// input mapping.
+func LoadFormattersFromMapping(extToName map[string]string) map[string]Formatter {
+	byExt := make(map[string]Formatter)
+	for ext, name := range extToName {
+		formatter := FormatterRegistry[name]
+		if formatter == nil {
+			log.Fatalf("Unknown formatter: %s", name)
+		}
+		if !formatter.IsInstalled() {
+			log.Fatalf("Formatter %s not installed", name)
+		}
+		if byExt[ext] != nil {
+			log.Fatalf("Multiple formatters for extension '%s'", ext)
+		}
+		byExt[ext] = formatter
+	}
+
+	return byExt
+}
+
 // Returns a map of file extension to formatter for all installed formatters in
 // the registry.
-func loadFormatters() map[string]Formatter {
+func LoadDefaultFormatters() map[string]Formatter {
 	byExt := make(map[string]Formatter)
 	for name, f := range FormatterRegistry {
 		if !f.IsInstalled() {
-			log.Printf("Skipping formatter %s b/c it's not installed\n", name)
+			log.Printf("Skipping formatter %s b/c it's not installed", name)
 			continue
 		}
 
 		for _, ext := range f.FileExtensions() {
 			if byExt[ext] != nil {
-				log.Fatalf("Multiple formatters for extension '%s'\n", ext)
+				log.Fatalf("Multiple formatters for extension '%s'", ext)
 			}
 
 			byExt[ext] = f
