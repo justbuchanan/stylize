@@ -1,0 +1,26 @@
+--- a/bad.BUILD
++++ b/bad.BUILD
+@@ -1,2 +1,2 @@
+-py_binary(name='hello')
++py_binary(name = "hello")
+ 
+--- a/bad.cpp
++++ b/bad.cpp
+@@ -1,2 +1,2 @@
+-int  main( ) { }
++int main() {}
+ 
+--- a/bad.go
++++ b/bad.go
+@@ -1,2 +1,4 @@
+ package main
++
+ func main()
++
+--- a/bad.py
++++ b/bad.py
+@@ -1,3 +1,3 @@
+ def main():
+-  print('hello' )
++    print('hello')
+ 
