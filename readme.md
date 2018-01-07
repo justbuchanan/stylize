@@ -9,19 +9,19 @@ It's a wrapper over other checkstyle programs such as `clang-format` or `yapf` t
 
 ~~~{.sh}
 # install
-go get -u gopkg.in/justbuchanan/stylize.v1
+go get -u github.com/justbuchanan/stylize
 
 # format all code in-place (note: make a git commit before doing this - otherwise there's no undo button)
-stylize.v1 -i
+stylize -i
 
 # format code in place, excluding the 'external' directory
-stylize.v1 -i --exclude_dirs external
+stylize -i --exclude_dirs external
 
 # generate a patch
-stylize.v1 --patch_output patch.txt
+stylize --patch_output patch.txt
 
 # reformat files that differ from origin/master
-stylize.v1 -i --git_diffbase origin/master
+stylize -i --git_diffbase origin/master
 ~~~
 
 
