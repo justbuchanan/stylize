@@ -63,28 +63,23 @@ func TestInPlace(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmp)
-
 	t.Log("tmp dir: " + tmp)
 
-	// copy testdata to output
-	cpCmd := exec.Command("cp", "-r", "testdata/", tmp)
-	err = cpCmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
-	dir := path.Join(tmp, "testdata")
-
-	// TODO: test exclude not modified
+	dir := copyTestData(t, tmp)
 
 	exclude := []string{path.Join(dir, "exclude")}
 	t.Log("exclude: " + strings.Join(exclude, ","))
+
 	// run in-place formatting
 	StylizeMain(LoadDefaultFormatters(), dir, exclude, "", nil, true, PARALLELISM)
 
 	if !isDirectoryFormatted(t, dir, exclude) {
 		t.Fatal("Second run of formatter showed a diff. Everything should have been fixed in-place the first time.")
 	}
+
+	// TODO: test exclude not modified
+
+	os.RemoveAll(tmp)
 }
 
 func TestInPlaceWithConfig(t *testing.T) {
@@ -95,13 +90,7 @@ func TestInPlaceWithConfig(t *testing.T) {
 
 	t.Log("tmp dir: " + tmp)
 
-	// copy testdata to output
-	cpCmd := exec.Command("cp", "-r", "testdata/", tmp)
-	err = cpCmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
-	dir := path.Join(tmp, "testdata")
+	dir := copyTestData(t, tmp)
 
 	cfgPath := path.Join(dir, ".stylize.yml")
 	err = ioutil.WriteFile(cfgPath, []byte("---\nformatters:\n  .py: yapf\nexclude_dirs:\n  - exclude"), 0644)
@@ -116,7 +105,6 @@ func TestInPlaceWithConfig(t *testing.T) {
 	}
 	t.Log("Read config file")
 
-	t.Log("exclude: " + strings.Join(cfg.ExcludeDirs, ","))
 	for i, edir := range cfg.ExcludeDirs {
 		cfg.ExcludeDirs[i] = filepath.Join(dir, edir)
 	}
@@ -130,6 +118,7 @@ func TestInPlaceWithConfig(t *testing.T) {
 
 	// run in-place formatting
 	numChanged, numTotal, numErr := StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
+	t.Log("Ran stylize")
 	t.Logf("%d, %d, %d", numChanged, numTotal, numErr)
 
 	if numChanged != 1 {
@@ -137,7 +126,7 @@ func TestInPlaceWithConfig(t *testing.T) {
 	}
 
 	numChanged, numTotal, numErr = StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
-
+	t.Log("Ran stylize")
 	t.Logf("%d, %d, %d", numChanged, numTotal, numErr)
 
 	if numChanged != 0 {
@@ -156,12 +145,7 @@ func TestGitDiffbase(t *testing.T) {
 	t.Log("tmp dir: " + tmp)
 
 	// copy testdata to output
-	cpCmd := exec.Command("cp", "-r", "testdata/", tmp)
-	err = cpCmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
-	dir := path.Join(tmp, "testdata")
+	dir := copyTestData(t, tmp)
 
 	runCmd(t, dir, "git", "init")
 	runCmd(t, dir, "git", "add", ".")
@@ -235,6 +219,15 @@ func TestCollectPatch(t *testing.T) {
 		t.Logf("Expected: %s", expected)
 		t.Fatalf("Got: %s", patchOut.String())
 	}
+}
+
+func copyTestData(t *testing.T, dir string) string {
+	cpCmd := exec.Command("cp", "-r", "testdata/", dir)
+	err := cpCmd.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return path.Join(dir, "testdata")
 }
 
 func runCmd(t *testing.T, dir string, bin string, args ...string) {
