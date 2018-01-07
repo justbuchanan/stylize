@@ -29,8 +29,8 @@ stylize.v1 -i --git_diffbase origin/master
 
 Stylize currently has support for:
 * `buildifier`
-* `gofmt`
 * `clang-format`
+* `gofmt`
 * `yapf`
 
 Other formatters can easily be added. See the \*\_formatter.go files as examples.
