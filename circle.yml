@@ -17,6 +17,8 @@ jobs:
             - run: pip install yapf
             - run: go get -u github.com/bazelbuild/buildtools/buildifier
             - run: go get -u github.com/justbuchanan/ci-status
+            - run: go get golang.org/x/tools/cmd/cover
+            - run: go get github.com/mattn/goveralls
 
             - checkout
 
@@ -27,9 +29,12 @@ jobs:
             # install stylize deps
             - run: go get -t ./...
 
-            - run: ci-status --context tests --description "go test" "go test . -v"
             - run: ci-status --context build --description "go build" "go build"
-            - run: ci-status --context checkstyle --description "run stylize" "./stylize --exclude_dirs=testdata --patch_file_out /tmp/artifacts/pretty.patch"
+
+            - run: ci-status --context checkstyle --description "run stylize" "./stylize --exclude_dirs=testdata --output_patch_file /tmp/artifacts/pretty.patch" || true
+
+            - run: ci-status --context tests --description "go test" "go test -v -covermode=count -coverprofile=coverage.out"
+            - run: ci-status --context coverage_upload --description "upload coverage with goveralls" "goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_REPO_TOKEN"
 
             - store_artifacts:
                 path: /tmp/artifacts
@@ -39,6 +44,3 @@ workflows:
   all:
     jobs:
       - build
-
-# TODO: coveralls
-# TODO: check code style of this repo
