@@ -21,7 +21,7 @@ stylize --patch_output patch.txt
 stylize -i
 
 # format code in place, excluding the 'external' directory
-stylize -i --exclude_dirs external
+stylize -i --exclude_dirs=build,external
 
 # reformat only files that differ from origin/master
 stylize -i --git_diffbase origin/master
