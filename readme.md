@@ -18,8 +18,8 @@ stylize --patch_output patch.txt
 # note: make a git commit before doing this - there's no undo button
 stylize -i
 
-# format code in place, excluding the 'external' directory
-stylize -i --exclude_dirs=build,external
+# format code in place, excluding a couple directories
+stylize -i --exclude=build,external
 
 # reformat only files that differ from origin/master
 stylize -i --git_diffbase origin/master
