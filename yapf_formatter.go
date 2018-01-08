@@ -13,7 +13,11 @@ var (
 type YapfFormatter struct{}
 
 func init() {
-	RegisterFormatter("yapf", &YapfFormatter{})
+	RegisterFormatter(&YapfFormatter{})
+}
+
+func (F *YapfFormatter) Name() string {
+	return "yapf"
 }
 
 func (F *YapfFormatter) FileExtensions() []string {

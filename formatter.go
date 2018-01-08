@@ -15,6 +15,7 @@ import (
 // New formatters can be added by implementing this interface and registering an
 // instance with RegisterFormatter().
 type Formatter interface {
+	Name() string
 	// Reads the input stream and writes a prettified version to the output.
 	FormatToBuffer(file string, in io.Reader, out io.Writer) error
 	// Reformats the given file in-place.
@@ -115,11 +116,11 @@ func LoadDefaultFormatters() map[string]Formatter {
 	return byExt
 }
 
-func RegisterFormatter(name string, f Formatter) {
-	if FormatterRegistry[name] != nil {
-		log.Fatalf("Attempt to double-register formatter '%s'\n", name)
+func RegisterFormatter(f Formatter) {
+	if FormatterRegistry[f.Name()] != nil {
+		log.Fatalf("Attempt to double-register formatter '%s'\n", f.Name())
 	}
-	FormatterRegistry[name] = f
+	FormatterRegistry[f.Name()] = f
 }
 
 var (

@@ -13,7 +13,11 @@ var (
 type ClangFormatter struct{}
 
 func init() {
-	RegisterFormatter("clang", &ClangFormatter{})
+	RegisterFormatter(&ClangFormatter{})
+}
+
+func (F *ClangFormatter) Name() string {
+	return "clang"
 }
 
 func (F *ClangFormatter) FileExtensions() []string {

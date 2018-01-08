@@ -8,7 +8,11 @@ import (
 type BuildifierFormatter struct{}
 
 func init() {
-	RegisterFormatter("buildifier", &BuildifierFormatter{})
+	RegisterFormatter(&BuildifierFormatter{})
+}
+
+func (F *BuildifierFormatter) Name() string {
+	return "buildifier"
 }
 
 func (F *BuildifierFormatter) FileExtensions() []string {

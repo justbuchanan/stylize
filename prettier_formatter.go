@@ -12,7 +12,11 @@ import (
 type PrettierFormatter struct{}
 
 func init() {
-	RegisterFormatter("prettier", &PrettierFormatter{})
+	RegisterFormatter(&PrettierFormatter{})
+}
+
+func (F *PrettierFormatter) Name() string {
+	return "prettier"
 }
 
 func (F *PrettierFormatter) FileExtensions() []string {

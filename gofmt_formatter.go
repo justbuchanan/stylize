@@ -7,7 +7,11 @@ import (
 type GolangFormatter struct{}
 
 func init() {
-	RegisterFormatter("gofmt", &GolangFormatter{})
+	RegisterFormatter(&GolangFormatter{})
+}
+
+func (F *GolangFormatter) Name() string {
+	return "gofmt"
 }
 
 func (F *GolangFormatter) FileExtensions() []string {
