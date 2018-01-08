@@ -1,7 +1,7 @@
 ---
 formatters:
-    .py: yapf
-    .go: gofmt
+  .py: yapf
+  .go: gofmt
 exclude:
   - testdata
 clang_style: google
