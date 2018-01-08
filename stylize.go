@@ -197,10 +197,13 @@ func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan strin
 	return resultOut
 }
 
+type RunStats struct {
+	Change, Total, Error int
+}
+
 // Consumes the input channel, logging all actions made and collecting stats.
 // If the output is a terminal, prints files that are checked, but don't need formatting.
-// @return (changeCount, totalCount, errCount)
-func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) (int, int, int) {
+func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) RunStats {
 	// Calculate terminal width so text can be padded appropriately for line-
 	// overwriting (done only when output is a terminal).
 	var termWidth int
@@ -224,18 +227,18 @@ func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) (i
 	}
 
 	// iterate through all results, collecting basic stats and logging actions.
-	changeCount, totalCount, errCount := 0, 0, 0
+	var stats RunStats
 	for r := range results {
-		totalCount++
+		stats.Total++
 
 		if r.Error != nil {
 			printf(false, "Error formatting file '%s': %q", r.FilePath, r.Error)
-			errCount++
+			stats.Error++
 			continue
 		}
 
 		if r.FormatNeeded {
-			changeCount++
+			stats.Change++
 
 			if inPlace {
 				printf(false, "Formatted: '%s'", r.FilePath)
@@ -248,19 +251,19 @@ func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) (i
 	}
 
 	if inPlace {
-		printf(false, "%d / %d formatted", changeCount, totalCount)
+		printf(false, "%d / %d formatted", stats.Change, stats.Total)
 	} else {
-		printf(false, "%d / %d need formatting", changeCount, totalCount)
+		printf(false, "%d / %d need formatting", stats.Change, stats.Total)
 	}
 
-	return changeCount, totalCount, errCount
+	return stats
 }
 
 // @param gitDiffbase If provided, only looks at files that differ from the
 //     diffbase. Otherwise looks at all files.
 // @param formatters A map of file extension -> formatter
 // @return (changeCount, totalCount, errCount)
-func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) (int, int, int) {
+func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) RunStats {
 	if inPlace && patchOut != nil {
 		log.Fatal("Patch output writer should only be provided in non-inplace runs")
 	}

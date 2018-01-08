@@ -68,7 +68,7 @@ func main() {
 		formatters = LoadDefaultFormatters()
 	}
 
-	var changeCount, errCount int
+	var stats RunStats
 	if !*inPlaceFlag && len(*patchFileFlag) > 0 {
 		// Setup patch output writer
 		var err error
@@ -86,17 +86,17 @@ func main() {
 			defer patchFileOut.Close()
 			log.Printf("Writing patch to file %s", *patchFileFlag)
 		}
-		changeCount, _, errCount = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, patchOut, *inPlaceFlag, *parallelismFlag)
+		stats = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, patchOut, *inPlaceFlag, *parallelismFlag)
 	} else {
-		changeCount, _, errCount = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, nil, *inPlaceFlag, *parallelismFlag)
+		stats = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, nil, *inPlaceFlag, *parallelismFlag)
 	}
 
-	if errCount != 0 {
+	if stats.Error != 0 {
 		os.Exit(1)
 	}
 
 	// Signal that files need formatting
-	if !*inPlaceFlag && changeCount > 0 {
+	if !*inPlaceFlag && stats.Change > 0 {
 		os.Exit(2)
 	}
 }

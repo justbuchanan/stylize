@@ -52,8 +52,8 @@ func TestCreatePatch(t *testing.T) {
 }
 
 func isDirectoryFormatted(t *testing.T, dir string, exclude []string) bool {
-	numFormatted, _, numError := StylizeMain(LoadDefaultFormatters(), dir, exclude, "", nil, false, PARALLELISM)
-	return numFormatted == 0 && numError == 0
+	stats := StylizeMain(LoadDefaultFormatters(), dir, exclude, "", nil, false, PARALLELISM)
+	return stats.Change == 0 && stats.Error == 0
 }
 
 func TestInPlace(t *testing.T) {
@@ -96,17 +96,17 @@ func TestInPlaceWithConfig(t *testing.T) {
 	formatters := LoadFormattersFromMapping(cfg.FormattersByExt)
 
 	// run in-place formatting
-	numChanged, numTotal, numErr := StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
-	t.Logf("Stylize results: %d, %d, %d", numChanged, numTotal, numErr)
+	stats := StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
+	t.Logf("Stylize results: %d, %d, %d", stats.Change, stats.Total, stats.Error)
 
-	if numChanged != 1 {
+	if stats.Change != 1 {
 		t.Fatal("One file should have changed")
 	}
 
-	numChanged, numTotal, numErr = StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
-	t.Logf("Stylize results: %d, %d, %d", numChanged, numTotal, numErr)
+	stats = StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
+	t.Logf("Stylize results: %d, %d, %d", stats.Change, stats.Total, stats.Error)
 
-	if numChanged != 0 {
+	if stats.Change != 0 {
 		t.Fatal("No files should have changed")
 	}
 
@@ -136,11 +136,11 @@ func TestGitDiffbase(t *testing.T) {
 	t.Log("exclude: " + strings.Join(exclude, ","))
 
 	// run stylize with diffbase provided
-	numFormatted, _, numErr := StylizeMain(LoadDefaultFormatters(), dir, exclude, "master", nil, true, PARALLELISM)
-	if numFormatted != 1 {
-		t.Fatalf("Stylize should have formatted one and only one file. Instead it was %d", numFormatted)
+	stats := StylizeMain(LoadDefaultFormatters(), dir, exclude, "master", nil, true, PARALLELISM)
+	if stats.Change != 1 {
+		t.Fatalf("Stylize should have formatted one and only one file. Instead it was %d", stats.Change)
 	}
-	if numErr > 0 {
+	if stats.Error > 0 {
 		t.Fatalf("Error formatting files")
 	}
 
