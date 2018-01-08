@@ -64,7 +64,10 @@ func TestInPlace(t *testing.T) {
 	t.Log("exclude: " + strings.Join(exclude, ","))
 
 	// run in-place formatting
-	StylizeMain(LoadDefaultFormatters(), dir, exclude, "", nil, true, PARALLELISM)
+	stats := StylizeMain(LoadDefaultFormatters(), dir, exclude, "", nil, true, PARALLELISM)
+	if stats.Error > 0 {
+		t.Fatal("Formatting failed")
+	}
 
 	if !isDirectoryFormatted(t, dir, exclude) {
 		t.Fatal("Second run of formatter showed a diff. Everything should have been fixed in-place the first time.")
