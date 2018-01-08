@@ -60,7 +60,7 @@ func TestCreatePatch(t *testing.T) {
 		tCheckErr(t, err)
 		patchOut = patchFile
 		defer patchFile.Close()
-		t.Log("Writing golden file to %s", goldenFile)
+		t.Logf("Writing golden file to %s", goldenFile)
 	} else {
 		patchOut = &patchBuffer
 	}
