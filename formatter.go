@@ -141,5 +141,6 @@ var (
 		&formatters.GofmtFormatter{},
 		&formatters.BuildifierFormatter{},
 		&formatters.RustfmtFormatter{},
+		&formatters.YamlFormatter{},
 	}
 )
