@@ -107,16 +107,14 @@ func TestInPlaceWithConfig(t *testing.T) {
 
 	// run in-place formatting
 	numChanged, numTotal, numErr := StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
-	t.Log("Ran stylize")
-	t.Logf("%d, %d, %d", numChanged, numTotal, numErr)
+	t.Logf("Stylize results: %d, %d, %d", numChanged, numTotal, numErr)
 
 	if numChanged != 1 {
 		t.Fatal("One file should have changed")
 	}
 
 	numChanged, numTotal, numErr = StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
-	t.Log("Ran stylize")
-	t.Logf("%d, %d, %d", numChanged, numTotal, numErr)
+	t.Logf("Stylize results: %d, %d, %d", numChanged, numTotal, numErr)
 
 	if numChanged != 0 {
 		t.Fatal("No files should have changed")
@@ -129,15 +127,18 @@ func TestGitDiffbase(t *testing.T) {
 	tmp := mktmp(t)
 	dir := copyTestData(t, tmp)
 
+	// initial commit
 	runCmd(t, dir, "git", "init")
 	runCmd(t, dir, "git", "add", ".")
 	runCmd(t, dir, "git", "commit", "-m", "first commit")
+
+	// new branch
 	runCmd(t, dir, "git", "checkout", "-b", "other")
 
-	// add new files
+	// add new files, delete a couple
 	runCmd(t, dir, "cp", "bad.cpp", "exclude/bad2.cpp")
-	runCmd(t, dir, "git", "mv", "bad.cpp", "bad2.cpp")
-	runCmd(t, dir, "rm", "bad.py")
+	runCmd(t, dir, "cp", "bad.cpp", "bad2.cpp")
+	runCmd(t, dir, "rm", "bad.py", "bad.cpp")
 	runCmd(t, dir, "git", "add", ".")
 	runCmd(t, dir, "git", "commit", "-m", "added files")
 
