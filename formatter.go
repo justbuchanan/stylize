@@ -17,16 +17,16 @@ import (
 type Formatter interface {
 	Name() string
 	// Reads the input stream and writes a prettified version to the output.
-	FormatToBuffer(file string, in io.Reader, out io.Writer) error
+	FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error
 	// Reformats the given file in-place.
-	FormatInPlace(file string) error
+	FormatInPlace(args []string, file string) error
 	// Check if the required binary is installed.
 	IsInstalled() bool
 	// A list of file extensions (including the '.') that this formatter applies to.
 	FileExtensions() []string
 }
 
-func FormatInPlaceAndCheckModified(F Formatter, absPath string) (bool, error) {
+func FormatInPlaceAndCheckModified(F Formatter, args []string, absPath string) (bool, error) {
 	// record modification time before running formatter
 	fi, err := os.Stat(absPath)
 	if err != nil {
@@ -34,7 +34,7 @@ func FormatInPlaceAndCheckModified(F Formatter, absPath string) (bool, error) {
 	}
 	mtimeBefore := fi.ModTime()
 
-	err = F.FormatInPlace(absPath)
+	err = F.FormatInPlace(args, absPath)
 	if err != nil {
 		return false, err
 	}
@@ -50,14 +50,14 @@ func FormatInPlaceAndCheckModified(F Formatter, absPath string) (bool, error) {
 	return modified, nil
 }
 
-func CreatePatchWithFormatter(F Formatter, wdir, file string) (string, error) {
+func CreatePatchWithFormatter(F Formatter, args []string, wdir, file string) (string, error) {
 	fileContent, err := ioutil.ReadFile(filepath.Join(wdir, file))
 	if err != nil {
 		return "", err
 	}
 
 	var formattedOutput bytes.Buffer
-	err = F.FormatToBuffer(file, bytes.NewReader(fileContent), &formattedOutput)
+	err = F.FormatToBuffer(args, file, bytes.NewReader(fileContent), &formattedOutput)
 	if err != nil {
 		return "", err
 	}

@@ -1,13 +1,8 @@
 package main
 
 import (
-	"flag"
 	"io"
 	"os/exec"
-)
-
-var (
-	yapfStyleFlag = flag.String("yapf_style", "", "Style to pass to yapf. See `yapf --help` for info.")
 )
 
 type YapfFormatter struct{}
@@ -29,19 +24,11 @@ func (F *YapfFormatter) IsInstalled() bool {
 	return err == nil
 }
 
-func maybeAppendYapfStyleArgs(args []string) []string {
-	if len(*yapfStyleFlag) > 0 {
-		return append(args, "--style", *yapfStyleFlag)
-	}
-	return args
+func (F *YapfFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
+	args2 := append([]string{"yapf"}, args...)
+	return runIOCommand(args2, in, out)
 }
 
-func (F *YapfFormatter) FormatToBuffer(file string, in io.Reader, out io.Writer) error {
-	args := maybeAppendYapfStyleArgs([]string{"yapf"})
-	return runIOCommand(args, in, out)
-}
-
-func (F *YapfFormatter) FormatInPlace(absPath string) error {
-	args := maybeAppendYapfStyleArgs([]string{"yapf", "-i", absPath})
-	return runIOCommand(args, nil, nil)
+func (F *YapfFormatter) FormatInPlace(args []string, absPath string) error {
+	return runIOCommand(append([]string{"yapf", "-i", absPath}, args...), nil, nil)
 }

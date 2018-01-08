@@ -111,15 +111,15 @@ func IterateGitChangedFiles(rootDir string, exclude []string, diffbase string) (
 	return files, nil
 }
 
-func runFormatter(rootDir, file string, formatter Formatter, inPlace bool) FormattingResult {
+func runFormatter(rootDir, file string, formatter Formatter, formatterArgs []string, inPlace bool) FormattingResult {
 	result := FormattingResult{
 		FilePath: file,
 	}
 
 	if inPlace {
-		result.FormatNeeded, result.Error = FormatInPlaceAndCheckModified(formatter, filepath.Join(rootDir, file))
+		result.FormatNeeded, result.Error = FormatInPlaceAndCheckModified(formatter, formatterArgs, filepath.Join(rootDir, file))
 	} else {
-		result.Patch, result.Error = CreatePatchWithFormatter(formatter, rootDir, file)
+		result.Patch, result.Error = CreatePatchWithFormatter(formatter, formatterArgs, rootDir, file)
 		if len(result.Patch) > 0 {
 			result.FormatNeeded = true
 		}
@@ -159,7 +159,7 @@ func CollectPatch(results <-chan FormattingResult, patchOut io.Writer) <-chan Fo
 	return resultsOut
 }
 
-func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan string, rootDir string, inPlace bool, parallelism int) <-chan FormattingResult {
+func RunFormattersOnFiles(formatters map[string]Formatter, formatterArgs map[string][]string, fileChan <-chan string, rootDir string, inPlace bool, parallelism int) <-chan FormattingResult {
 	// use semaphore to limit how many formatting operations we run in parallel
 	semaphore := make(chan int, parallelism)
 	var wg sync.WaitGroup
@@ -180,7 +180,7 @@ func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan strin
 			wg.Add(1)
 			semaphore <- 0 // acquire
 			go func(file string, formatter Formatter, inPlace bool) {
-				resultOut <- runFormatter(rootDir, file, formatter, inPlace)
+				resultOut <- runFormatter(rootDir, file, formatter, formatterArgs[formatter.Name()], inPlace)
 				wg.Done()
 				<-semaphore // release
 			}(file, formatter, inPlace)
@@ -228,7 +228,11 @@ func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) Ru
 		stats.Total++
 
 		if r.Error != nil {
-			printf(false, "Error formatting file '%s': %q", r.FilePath, r.Error)
+			if inPlace {
+				printf(false, "Error formatting file '%s': %q", r.FilePath, r.Error)
+			} else {
+				printf(false, "Error checking file '%s': %q", r.FilePath, r.Error)
+			}
 			stats.Error++
 			continue
 		}
@@ -259,7 +263,7 @@ func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) Ru
 //     diffbase. Otherwise looks at all files.
 // @param formatters A map of file extension -> formatter
 // @return (changeCount, totalCount, errCount)
-func StylizeMain(formatters map[string]Formatter, rootDir string, exclude []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) RunStats {
+func StylizeMain(formatters map[string]Formatter, formatterArgs map[string][]string, rootDir string, exclude []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) RunStats {
 	if inPlace && patchOut != nil {
 		log.Fatal("Patch output writer should only be provided in non-inplace runs")
 	}
@@ -286,7 +290,7 @@ func StylizeMain(formatters map[string]Formatter, rootDir string, exclude []stri
 	}
 
 	// run formatter on all files
-	results := RunFormattersOnFiles(formatters, fileChan, rootDir, inPlace, parallelism)
+	results := RunFormattersOnFiles(formatters, formatterArgs, fileChan, rootDir, inPlace, parallelism)
 
 	// write patch to output if requested
 	if patchOut != nil {
