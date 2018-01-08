@@ -59,12 +59,7 @@ func isDirectoryFormatted(t *testing.T, dir string, exclude []string) bool {
 }
 
 func TestInPlace(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "stylize")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log("tmp dir: " + tmp)
-
+	tmp := mktmp(t)
 	dir := copyTestData(t, tmp)
 
 	exclude := []string{path.Join(dir, "exclude")}
@@ -83,17 +78,11 @@ func TestInPlace(t *testing.T) {
 }
 
 func TestInPlaceWithConfig(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "stylize")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Log("tmp dir: " + tmp)
-
+	tmp := mktmp(t)
 	dir := copyTestData(t, tmp)
 
 	cfgPath := path.Join(dir, ".stylize.yml")
-	err = ioutil.WriteFile(cfgPath, []byte("---\nformatters:\n  .py: yapf\nexclude_dirs:\n  - exclude"), 0644)
+	err := ioutil.WriteFile(cfgPath, []byte("---\nformatters:\n  .py: yapf\nexclude_dirs:\n  - exclude"), 0644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,14 +126,7 @@ func TestInPlaceWithConfig(t *testing.T) {
 }
 
 func TestGitDiffbase(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "stylize")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Log("tmp dir: " + tmp)
-
-	// copy testdata to output
+	tmp := mktmp(t)
 	dir := copyTestData(t, tmp)
 
 	runCmd(t, dir, "git", "init")
@@ -215,6 +197,16 @@ func TestCollectPatch(t *testing.T) {
 		t.Logf("Expected: %s", expected)
 		t.Fatalf("Got: %s", patchOut.String())
 	}
+}
+
+func mktmp(t *testing.T) string {
+	tmp, err := ioutil.TempDir("", "stylize")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("tmp dir: " + tmp)
+	return tmp
 }
 
 func copyTestData(t *testing.T, dir string) string {
