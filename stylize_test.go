@@ -43,6 +43,8 @@ func TestMatch(t *testing.T) {
 	expectMatch(t, false, "bbb", "bbb.cpp")
 	expectMatch(t, true, "*", "bad.cpp")
 	expectMatch(t, true, "*", "files/bad.cpp")
+	// TODO: gitignore handles this case, should we?
+	expectMatch(t, false, "/files", "files/bad.cpp")
 }
 
 func TestCreatePatch(t *testing.T) {
