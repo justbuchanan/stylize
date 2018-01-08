@@ -37,6 +37,8 @@ jobs:
             - run: ci-status --context tests --description "go test" "go test -v -covermode=count -coverprofile=coverage.out"
             - run: ci-status -h --context coverage_upload --description "upload coverage with goveralls" "goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_REPO_TOKEN"
 
+            - run: ci-status --context vet --description "go vet" "go vet"
+
             - store_artifacts:
                 path: /tmp/artifacts
 
