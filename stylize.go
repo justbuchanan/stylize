@@ -199,7 +199,7 @@ func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan strin
 
 // Consumes the input channel, logging all actions made and collecting stats.
 // If the output is a terminal, prints files that are checked, but don't need formatting.
-// @return (uglyCount, totalCount, errCount)
+// @return (changeCount, totalCount, errCount)
 func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) (int, int, int) {
 	// Calculate terminal width so text can be padded appropriately for line-
 	// overwriting (done only when output is a terminal).
@@ -211,47 +211,55 @@ func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) (i
 		termWidth = 0
 	}
 
+	printf := func(tmp bool, format string, a ...interface{}) {
+		fmt.Fprintf(os.Stderr, padToWidth(fmt.Sprintf(format, a...), termWidth))
+		if tmp {
+			// Print a \r at the end so that the next line printed overwrites
+			// this one. Printing-in-place shows that the program is working,
+			// but doesn't fill up the screen with unnecessary info
+			fmt.Fprintf(os.Stderr, "\r")
+		} else {
+			fmt.Fprintf(os.Stderr, "\n")
+		}
+	}
+
 	// iterate through all results, collecting basic stats and logging actions.
-	uglyCount, totalCount, errCount := 0, 0, 0
+	changeCount, totalCount, errCount := 0, 0, 0
 	for r := range results {
 		totalCount++
 
 		if r.Error != nil {
-			fmt.Fprintf(os.Stderr, "Error formatting file '%s': %q\n", r.FilePath, r.Error)
+			printf(false, "Error formatting file '%s': %q", r.FilePath, r.Error)
 			errCount++
 			continue
 		}
 
 		if r.FormatNeeded {
-			uglyCount++
+			changeCount++
 
 			if inPlace {
-				fmt.Fprintf(os.Stderr, "Formatted: '%s'\n", r.FilePath)
+				printf(false, "Formatted: '%s'", r.FilePath)
 			} else {
-				fmt.Fprintf(os.Stderr, "Needs formatting: '%s'\n", r.FilePath)
+				printf(false, "Needs formatting: '%s'", r.FilePath)
 			}
 		} else if isTerm {
-			// Print a \r at the end so that the next line printed overwrites
-			// this one. Printing-in-place shows that the program is working,
-			// but doesn't fill up the screen with unnecessary info
-			txt := fmt.Sprintf("Checked '%s'", r.FilePath)
-			fmt.Fprintf(os.Stderr, "%s\r", padToWidth(txt, termWidth))
+			printf(true, "Checked '%s'", r.FilePath)
 		}
 	}
 
 	if inPlace {
-		fmt.Fprintln(os.Stderr, padToWidth(fmt.Sprintf("%d / %d formatted", uglyCount, totalCount), termWidth))
+		printf(false, "%d / %d formatted", changeCount, totalCount)
 	} else {
-		fmt.Fprintln(os.Stderr, padToWidth(fmt.Sprintf("%d / %d need formatting", uglyCount, totalCount), termWidth))
+		printf(false, "%d / %d need formatting", changeCount, totalCount)
 	}
 
-	return uglyCount, totalCount, errCount
+	return changeCount, totalCount, errCount
 }
 
 // @param gitDiffbase If provided, only looks at files that differ from the
 //     diffbase. Otherwise looks at all files.
 // @param formatters A map of file extension -> formatter
-// @return (uglyCount, totalCount, errCount)
+// @return (changeCount, totalCount, errCount)
 func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) (int, int, int) {
 	if inPlace && patchOut != nil {
 		log.Fatal("Patch output writer should only be provided in non-inplace runs")

@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -30,6 +31,8 @@ func main() {
 		log.Printf("Loaded config from file %s", *configFileFlag)
 	}
 
+	rootDir := absPathOrFail(*dirFlag)
+
 	// set style configs from config file
 	// TODO: do better
 	if cfg != nil {
@@ -50,9 +53,11 @@ func main() {
 	if len(*excludeDirFlag) > 0 {
 		excludeDirs = append(excludeDirs, strings.Split(*excludeDirFlag, ",")...)
 	}
-	// make exclude dirs absolute
-	for i := range excludeDirs {
-		excludeDirs[i] = absPathOrFail(excludeDirs[i])
+	// make exclude dirs absolute - if they're not already, they're assumed to be relative to the root directory
+	for i, edir := range excludeDirs {
+		if !filepath.IsAbs(edir) {
+			excludeDirs[i] = filepath.Join(rootDir, edir)
+		}
 	}
 
 	// setup formatters
@@ -63,9 +68,7 @@ func main() {
 		formatters = LoadDefaultFormatters()
 	}
 
-	rootDir := absPathOrFail(*dirFlag)
-
-	var uglyCount, errCount int
+	var changeCount, errCount int
 	if !*inPlaceFlag && len(*patchFileFlag) > 0 {
 		// Setup patch output writer
 		var err error
@@ -83,9 +86,9 @@ func main() {
 			defer patchFileOut.Close()
 			log.Printf("Writing patch to file %s", *patchFileFlag)
 		}
-		uglyCount, _, errCount = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, patchOut, *inPlaceFlag, *parallelismFlag)
+		changeCount, _, errCount = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, patchOut, *inPlaceFlag, *parallelismFlag)
 	} else {
-		uglyCount, _, errCount = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, nil, *inPlaceFlag, *parallelismFlag)
+		changeCount, _, errCount = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, nil, *inPlaceFlag, *parallelismFlag)
 	}
 
 	if errCount != 0 {
@@ -93,7 +96,7 @@ func main() {
 	}
 
 	// Signal that files need formatting
-	if !*inPlaceFlag && uglyCount > 0 {
+	if !*inPlaceFlag && changeCount > 0 {
 		os.Exit(2)
 	}
 }
