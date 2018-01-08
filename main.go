@@ -14,7 +14,7 @@ func main() {
 	patchFileFlag := flag.String("patch_output", "", "Path to output patch to. If '-', writes to stdout.")
 	configFileFlag := flag.String("config", ".stylize.yml", "Optional config file (defaults to .stylize.yml).")
 	dirFlag := flag.String("dir", ".", "Directory to recursively format.")
-	excludeDirFlag := flag.String("exclude_dirs", "", "Directories to exclude (comma-separated).")
+	excludeFlag := flag.String("exclude", "", "A list of exclude patterns (comma-separated).")
 	diffbaseFlag := flag.String("git_diffbase", "", "If provided, stylize only looks at files that differ from the given commit/branch.")
 	parallelismFlag := flag.Int("j", 8, "Number of files to process in parallel.")
 	flag.Parse()
@@ -31,7 +31,10 @@ func main() {
 		log.Printf("Loaded config from file %s", *configFileFlag)
 	}
 
-	rootDir := absPathOrFail(*dirFlag)
+	rootDir, err := filepath.Abs(*dirFlag)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// set style configs from config file
 	// TODO: do better
@@ -44,20 +47,14 @@ func main() {
 		}
 	}
 
-	var excludeDirs []string
+	var excludePatterns []string
 	// exclude dirs from config
 	if cfg != nil {
-		excludeDirs = append(excludeDirs, cfg.ExcludeDirs...)
+		excludePatterns = append(excludePatterns, cfg.ExcludePatterns...)
 	}
 	// exclude dirs from flag
-	if len(*excludeDirFlag) > 0 {
-		excludeDirs = append(excludeDirs, strings.Split(*excludeDirFlag, ",")...)
-	}
-	// make exclude dirs absolute - if they're not already, they're assumed to be relative to the root directory
-	for i, edir := range excludeDirs {
-		if !filepath.IsAbs(edir) {
-			excludeDirs[i] = filepath.Join(rootDir, edir)
-		}
+	if len(*excludeFlag) > 0 {
+		excludePatterns = append(excludePatterns, strings.Split(*excludeFlag, ",")...)
 	}
 
 	// setup formatters
@@ -86,9 +83,9 @@ func main() {
 			defer patchFileOut.Close()
 			log.Printf("Writing patch to file %s", *patchFileFlag)
 		}
-		stats = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, patchOut, *inPlaceFlag, *parallelismFlag)
+		stats = StylizeMain(formatters, rootDir, excludePatterns, *diffbaseFlag, patchOut, *inPlaceFlag, *parallelismFlag)
 	} else {
-		stats = StylizeMain(formatters, rootDir, excludeDirs, *diffbaseFlag, nil, *inPlaceFlag, *parallelismFlag)
+		stats = StylizeMain(formatters, rootDir, excludePatterns, *diffbaseFlag, nil, *inPlaceFlag, *parallelismFlag)
 	}
 
 	if stats.Error != 0 {

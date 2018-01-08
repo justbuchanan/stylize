@@ -8,7 +8,7 @@ import (
 // This type defines the structure of the yml config file for stylize.
 type Config struct {
 	FormattersByExt map[string]string `yaml:"formatters"`
-	ExcludeDirs     []string          `yaml:"exclude_dirs"`
+	ExcludePatterns []string          `yaml:"exclude"`
 
 	// TODO: do better
 	ClangStyle string `yaml:"clang_style"`

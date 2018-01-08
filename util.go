@@ -3,13 +3,12 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/danwakefield/fnmatch"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
-	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -28,14 +27,6 @@ func runIOCommand(args []string, in io.Reader, out io.Writer) error {
 	}
 
 	return nil
-}
-
-func absPathOrFail(path string) string {
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return absPath
 }
 
 type winsize struct {
@@ -89,4 +80,36 @@ func gitChangedFiles(rootDir, diffbase string) ([]string, error) {
 	changedFiles := strings.Split(strings.Trim(out.String(), "\n"), "\n")
 
 	return changedFiles, nil
+}
+
+// TODO: this implementation has a lot of flaws
+// It would be nice to do something similar to gitignore
+func filePatternMatch(pattern, file string) bool {
+	if fnmatch.Match(pattern, file, fnmatch.FNM_PATHNAME|fnmatch.FNM_LEADING_DIR) {
+		return true
+	}
+
+	// TODO: this is a hack
+	hasGlobChars := strings.ContainsAny(pattern, "*?")
+	if hasGlobChars {
+		return false
+	}
+
+	// If pattern ends in '/', ignore all files in that directory recursively
+	if strings.HasSuffix(pattern, "/") {
+		if strings.HasPrefix(file, pattern) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func fileIsExcluded(file string, exclude []string) bool {
+	for _, e := range exclude {
+		if filePatternMatch(e, file) {
+			return true
+		}
+	}
+	return false
 }

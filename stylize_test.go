@@ -24,6 +24,27 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+func expectMatch(t *testing.T, match bool, pattern, file string) {
+	m := filePatternMatch(pattern, file)
+	if m != match {
+		t.Logf("'%s' '%s'", pattern, file)
+		if match {
+			t.Error("Expected match, but didn't get one")
+		} else {
+			t.Error("It matched, but wasnt supposed to")
+		}
+	}
+}
+
+func TestMatch(t *testing.T) {
+	expectMatch(t, true, "exclude/", "exclude/file.cpp")
+	expectMatch(t, true, "exclude", "exclude/file.cpp")
+	expectMatch(t, false, "exclud", "exclude/file.cpp")
+	expectMatch(t, false, "bbb", "bbb.cpp")
+	expectMatch(t, true, "*", "bad.cpp")
+	expectMatch(t, true, "*", "files/bad.cpp")
+}
+
 func TestCreatePatch(t *testing.T) {
 	goldenFile := "testdata/patch.golden"
 
@@ -42,7 +63,8 @@ func TestCreatePatch(t *testing.T) {
 		patchOut = &patchBuffer
 	}
 
-	StylizeMain(LoadDefaultFormatters(), absPathOrFail("testdata"), []string{absPathOrFail("testdata/exclude")}, "", patchOut, false, PARALLELISM)
+	absDirPath, _ := filepath.Abs("testdata")
+	StylizeMain(LoadDefaultFormatters(), absDirPath, []string{"exclude"}, "", patchOut, false, PARALLELISM)
 
 	if !*generateGoldens {
 		assertGoldenMatch(t, goldenFile, patchBuffer.String())
@@ -60,7 +82,7 @@ func TestInPlace(t *testing.T) {
 	tmp := mktmp(t)
 	dir := copyTestData(t, tmp)
 
-	exclude := []string{path.Join(dir, "exclude")}
+	exclude := []string{"exclude"}
 	t.Log("exclude: " + strings.Join(exclude, ","))
 
 	// run in-place formatting
@@ -83,30 +105,26 @@ func TestInPlaceWithConfig(t *testing.T) {
 	dir := copyTestData(t, tmp)
 
 	cfgPath := path.Join(dir, ".stylize.yml")
-	err := ioutil.WriteFile(cfgPath, []byte("---\nformatters:\n  .py: yapf\nexclude_dirs:\n  - exclude"), 0644)
+	err := ioutil.WriteFile(cfgPath, []byte("---\nformatters:\n  .py: yapf\nexclude:\n  - exclude"), 0644)
 	tCheckErr(t, err)
 	t.Logf("Wrote config file: %s", cfgPath)
 
 	cfg, err := LoadConfig(cfgPath)
 	tCheckErr(t, err)
 	t.Log("Read config file")
-
-	for i, edir := range cfg.ExcludeDirs {
-		cfg.ExcludeDirs[i] = filepath.Join(dir, edir)
-	}
-	t.Log("exclude: " + strings.Join(cfg.ExcludeDirs, ","))
+	t.Log("exclude: " + strings.Join(cfg.ExcludePatterns, ","))
 
 	formatters := LoadFormattersFromMapping(cfg.FormattersByExt)
 
 	// run in-place formatting
-	stats := StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
+	stats := StylizeMain(formatters, dir, cfg.ExcludePatterns, "", nil, true, PARALLELISM)
 	t.Logf("Stylize results: %d, %d, %d", stats.Change, stats.Total, stats.Error)
 
 	if stats.Change != 1 {
 		t.Fatal("One file should have changed")
 	}
 
-	stats = StylizeMain(formatters, dir, cfg.ExcludeDirs, "", nil, true, PARALLELISM)
+	stats = StylizeMain(formatters, dir, cfg.ExcludePatterns, "", nil, true, PARALLELISM)
 	t.Logf("Stylize results: %d, %d, %d", stats.Change, stats.Total, stats.Error)
 
 	if stats.Change != 0 {
@@ -135,7 +153,7 @@ func TestGitDiffbase(t *testing.T) {
 	runCmd(t, dir, "git", "add", ".")
 	runCmd(t, dir, "git", "commit", "-m", "added files")
 
-	exclude := []string{path.Join(dir, "exclude")}
+	exclude := []string{"exclude"}
 	t.Log("exclude: " + strings.Join(exclude, ","))
 
 	// run stylize with diffbase provided

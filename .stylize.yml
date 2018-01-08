@@ -2,7 +2,7 @@
 formatters:
     .py: yapf
     .go: gofmt
-exclude_dirs:
+exclude:
   - testdata
 clang_style: google
 yapf_style: pep8

@@ -22,19 +22,10 @@ type FormattingResult struct {
 	Error        error
 }
 
-func fileIsExcluded(file string, excludeDirs []string) bool {
-	for _, eDir := range excludeDirs {
-		if filepath.HasPrefix(file, eDir) {
-			return true
-		}
-	}
-	return false
-}
-
 // Walks the given directory and sends all non-excluded files to the returned channel.
 // @param rootDir absolute path to root directory
 // @return file paths relative to rootDir
-func IterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
+func IterateAllFiles(rootDir string, exclude []string) <-chan string {
 	files := make(chan string)
 
 	go func() {
@@ -44,16 +35,21 @@ func IterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
 				return nil
 			}
 
-			excludeDirs = append(excludeDirs, absPathOrFail(".git"), absPathOrFail(".hg"))
-			if fi.IsDir() && fileIsExcluded(path, excludeDirs) {
+			relPath, _ := filepath.Rel(rootDir, path)
+
+			exclude = append(exclude, ".git", ".hg")
+			if fi.IsDir() && fileIsExcluded(relPath, exclude) {
 				return filepath.SkipDir
+			}
+
+			if fileIsExcluded(relPath, exclude) {
+				return nil
 			}
 
 			if fi.IsDir() {
 				return nil
 			}
 
-			relPath, _ := filepath.Rel(rootDir, path)
 			files <- relPath
 
 			return nil
@@ -66,7 +62,7 @@ func IterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
 // Finds files that have been modified since the common ancestor of HEAD and
 // diffbase and sends them onto the returned channel.
 // @return file paths relative to rootDir
-func IterateGitChangedFiles(rootDir string, excludeDirs []string, diffbase string) (<-chan string, error) {
+func IterateGitChangedFiles(rootDir string, exclude []string, diffbase string) (<-chan string, error) {
 	changedFiles, err := gitChangedFiles(rootDir, diffbase)
 	if err != nil {
 		return nil, err
@@ -90,8 +86,14 @@ func IterateGitChangedFiles(rootDir string, excludeDirs []string, diffbase strin
 
 		for _, file := range changedFiles {
 			absPath := filepath.Join(gitRoot, file)
-			if fileIsExcluded(absPath, excludeDirs) {
-				// log.Printf("Excluding file: %s", absPath)
+
+			// get file path relative to root directory
+			relPath, err := filepath.Rel(rootDir, absPath)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if fileIsExcluded(relPath, exclude) {
 				continue
 			}
 
@@ -100,12 +102,6 @@ func IterateGitChangedFiles(rootDir string, excludeDirs []string, diffbase strin
 			// TODO: use os.IsNotExist(err) instead. this doesn't work for directories, though
 			if _, err := os.Stat(absPath); err != nil {
 				continue
-			}
-
-			// get file path relative to root directory
-			relPath, err := filepath.Rel(rootDir, absPath)
-			if err != nil {
-				log.Fatal(err)
 			}
 
 			files <- relPath
@@ -263,7 +259,7 @@ func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) Ru
 //     diffbase. Otherwise looks at all files.
 // @param formatters A map of file extension -> formatter
 // @return (changeCount, totalCount, errCount)
-func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) RunStats {
+func StylizeMain(formatters map[string]Formatter, rootDir string, exclude []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) RunStats {
 	if inPlace && patchOut != nil {
 		log.Fatal("Patch output writer should only be provided in non-inplace runs")
 	}
@@ -271,9 +267,9 @@ func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []
 		log.Fatalf("root directory should be an absolute path: '%s'", rootDir)
 	}
 
-	for _, excl := range excludeDirs {
-		if !filepath.IsAbs(excl) {
-			log.Fatal("exclude directories should be absolute")
+	for _, excl := range exclude {
+		if filepath.IsAbs(excl) {
+			log.Fatal("exclude directories should not be absolute")
 		}
 	}
 
@@ -281,12 +277,12 @@ func StylizeMain(formatters map[string]Formatter, rootDir string, excludeDirs []
 	var err error
 	var fileChan <-chan string
 	if len(gitDiffbase) > 0 {
-		fileChan, err = IterateGitChangedFiles(rootDir, excludeDirs, gitDiffbase)
+		fileChan, err = IterateGitChangedFiles(rootDir, exclude, gitDiffbase)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		fileChan = IterateAllFiles(rootDir, excludeDirs)
+		fileChan = IterateAllFiles(rootDir, exclude)
 	}
 
 	// run formatter on all files
