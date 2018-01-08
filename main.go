@@ -22,6 +22,7 @@ func main() {
 	excludeFlag := flag.String("exclude", "", "A list of exclude patterns (comma-separated).")
 	diffbaseFlag := flag.String("git_diffbase", "", "If provided, stylize only looks at files that differ from the given commit/branch.")
 	parallelismFlag := flag.Int("j", 8, "Number of files to process in parallel.")
+	printFormattersFlag := flag.Bool("print_formatters", false, "Print map of file extension to formatter, then exit.")
 	flag.Parse()
 
 	// Read config file
@@ -68,6 +69,14 @@ func main() {
 		formatters = LoadFormattersFromMapping(cfg.FormattersByExt)
 	} else {
 		formatters = LoadDefaultFormatters()
+	}
+
+	if *printFormattersFlag {
+		fmt.Fprintln(os.Stderr, "Formatters:")
+		for ext, formatter := range formatters {
+			fmt.Fprintf(os.Stderr, "%s: %s\n", ext, formatter.Name())
+		}
+		os.Exit(1)
 	}
 
 	var stats RunStats
