@@ -44,7 +44,7 @@ func IterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
 				return nil
 			}
 
-			excludeDirs = append(excludeDirs, absPathOrDie(".git"), absPathOrDie(".hg"))
+			excludeDirs = append(excludeDirs, absPathOrFail(".git"), absPathOrFail(".hg"))
 			if fi.IsDir() && fileIsExcluded(path, excludeDirs) {
 				return filepath.SkipDir
 			}
@@ -61,26 +61,6 @@ func IterateAllFiles(rootDir string, excludeDirs []string) <-chan string {
 	}()
 
 	return files
-}
-
-// Returns a list of files that have changed since the given git diffbase. These
-// file paths are relative to the root of the git repo, not necessarily the
-// given rootDir.
-func gitChangedFiles(rootDir, diffbase string) ([]string, error) {
-	cmd := exec.Command("git", "--no-pager", "diff", "--name-only", diffbase)
-	cmd.Dir = rootDir
-	var out, stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err := cmd.Run()
-	if err != nil {
-		return nil, errors.Wrap(err, stderr.String())
-	}
-
-	// note: these paths are all relative to the git root directory
-	changedFiles := strings.Split(out.String(), "\n")
-
-	return changedFiles, nil
 }
 
 // Finds files that have been modified since the common ancestor of HEAD and
@@ -184,6 +164,7 @@ func CollectPatch(results <-chan FormattingResult, patchOut io.Writer) <-chan Fo
 }
 
 func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan string, rootDir string, inPlace bool, parallelism int) <-chan FormattingResult {
+	// use semaphore to limit how many formatting operations we run in parallel
 	semaphore := make(chan int, parallelism)
 	var wg sync.WaitGroup
 
@@ -216,6 +197,9 @@ func RunFormattersOnFiles(formatters map[string]Formatter, fileChan <-chan strin
 	return resultOut
 }
 
+// Consumes the input channel, logging all actions made and collecting stats.
+// If the output is a terminal, prints files that are checked, but don't need formatting.
+// @return (uglyCount, totalCount, errCount)
 func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) (int, int, int) {
 	// Calculate terminal width so text can be padded appropriately for line-
 	// overwriting (done only when output is a terminal).

@@ -9,13 +9,13 @@ import (
 )
 
 func main() {
-	inPlaceFlag := flag.Bool("i", false, "If enabled, formats files in place. Default behavior is just to check which files need formatting.")
+	inPlaceFlag := flag.Bool("i", false, "[WARNING] There's no undo button, make a commit first. If enabled, formats files in place. Default behavior is just to check which files need formatting.")
 	patchFileFlag := flag.String("patch_output", "", "Path to output patch to. If '-', writes to stdout.")
-	configFileFlag := flag.String("config", ".stylize.yml", "Config file")
+	configFileFlag := flag.String("config", ".stylize.yml", "Optional config file (defaults to .stylize.yml).")
 	dirFlag := flag.String("dir", ".", "Directory to recursively format.")
-	excludeDirFlag := flag.String("exclude_dirs", "", "Directories to exclude")
+	excludeDirFlag := flag.String("exclude_dirs", "", "Directories to exclude (comma-separated).")
 	diffbaseFlag := flag.String("git_diffbase", "", "If provided, stylize only looks at files that differ from the given commit/branch.")
-	parallelismFlag := flag.Int("j", 8, "Number of files to process in parallel")
+	parallelismFlag := flag.Int("j", 8, "Number of files to process in parallel.")
 	flag.Parse()
 
 	// Read config file
@@ -52,7 +52,7 @@ func main() {
 	}
 	// make exclude dirs absolute
 	for i := range excludeDirs {
-		excludeDirs[i] = absPathOrDie(excludeDirs[i])
+		excludeDirs[i] = absPathOrFail(excludeDirs[i])
 	}
 
 	// setup formatters
@@ -63,7 +63,7 @@ func main() {
 		formatters = LoadDefaultFormatters()
 	}
 
-	rootDir := absPathOrDie(*dirFlag)
+	rootDir := absPathOrFail(*dirFlag)
 
 	var uglyCount, errCount int
 	if !*inPlaceFlag && len(*patchFileFlag) > 0 {

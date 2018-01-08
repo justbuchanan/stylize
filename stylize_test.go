@@ -44,7 +44,7 @@ func TestCreatePatch(t *testing.T) {
 		patchOut = &patchBuffer
 	}
 
-	StylizeMain(LoadDefaultFormatters(), absPathOrDie("testdata"), []string{absPathOrDie("testdata/exclude")}, "", patchOut, false, PARALLELISM)
+	StylizeMain(LoadDefaultFormatters(), absPathOrFail("testdata"), []string{absPathOrFail("testdata/exclude")}, "", patchOut, false, PARALLELISM)
 
 	if !*generateGoldens {
 		assertGoldenMatch(t, goldenFile, patchBuffer.String())
@@ -171,15 +171,11 @@ func TestGitDiffbase(t *testing.T) {
 		t.Fatalf("Error formatting files")
 	}
 
-	diffCmd := exec.Command("git", "--no-pager", "diff", "--name-only")
-	diffCmd.Dir = dir
-	var stdout bytes.Buffer
-	diffCmd.Stdout = &stdout
-	err = diffCmd.Run()
+	// git diff
+	files, err := gitChangedFiles(dir, "HEAD")
 	if err != nil {
 		t.Fatal(err)
 	}
-	files := strings.Split(strings.Trim(stdout.String(), "\n"), "\n")
 
 	t.Logf("Files changed by stylize: %s", strings.Join(files, ", "))
 

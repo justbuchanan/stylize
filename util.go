@@ -30,7 +30,7 @@ func runIOCommand(args []string, in io.Reader, out io.Writer) error {
 	return nil
 }
 
-func absPathOrDie(path string) string {
+func absPathOrFail(path string) string {
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		log.Fatal(err)
@@ -69,4 +69,24 @@ func padToWidth(text string, w int) string {
 	}
 	sp := strings.Repeat(" ", spCount)
 	return fmt.Sprintf("%s%s", text, sp)
+}
+
+// Returns a list of files that have changed since the given git diffbase. These
+// file paths are relative to the root of the git repo, not necessarily the
+// given rootDir.
+func gitChangedFiles(rootDir, diffbase string) ([]string, error) {
+	cmd := exec.Command("git", "--no-pager", "diff", "--name-only", diffbase)
+	cmd.Dir = rootDir
+	var out, stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		return nil, errors.Wrap(err, stderr.String())
+	}
+
+	// note: these paths are all relative to the git root directory
+	changedFiles := strings.Split(strings.Trim(out.String(), "\n"), "\n")
+
+	return changedFiles, nil
 }
