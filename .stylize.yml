@@ -2,6 +2,7 @@
 formatters:
   .py: yapf
   .go: gofmt
+  .md: prettier
 exclude:
   - testdata
 clang_style: google

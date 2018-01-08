@@ -20,7 +20,7 @@ func (F *BuildifierFormatter) IsInstalled() bool {
 	return err == nil
 }
 
-func (F *BuildifierFormatter) FormatToBuffer(in io.Reader, out io.Writer) error {
+func (F *BuildifierFormatter) FormatToBuffer(file string, in io.Reader, out io.Writer) error {
 	return runIOCommand([]string{"buildifier"}, in, out)
 }
 

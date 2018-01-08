@@ -16,7 +16,7 @@ import (
 // instance with RegisterFormatter().
 type Formatter interface {
 	// Reads the input stream and writes a prettified version to the output.
-	FormatToBuffer(in io.Reader, out io.Writer) error
+	FormatToBuffer(file string, in io.Reader, out io.Writer) error
 	// Reformats the given file in-place.
 	FormatInPlace(file string) error
 	// Check if the required binary is installed.
@@ -56,7 +56,7 @@ func CreatePatchWithFormatter(F Formatter, wdir, file string) (string, error) {
 	}
 
 	var formattedOutput bytes.Buffer
-	err = F.FormatToBuffer(bytes.NewReader(fileContent), &formattedOutput)
+	err = F.FormatToBuffer(file, bytes.NewReader(fileContent), &formattedOutput)
 	if err != nil {
 		return "", err
 	}

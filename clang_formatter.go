@@ -17,7 +17,7 @@ func init() {
 }
 
 func (F *ClangFormatter) FileExtensions() []string {
-	return []string{".h", ".hpp", ".c", ".cc", ".cpp", ".proto", ".java", ".js"}
+	return []string{".h", ".hpp", ".c", ".cc", ".cpp", ".proto", ".java"}
 }
 
 func (F *ClangFormatter) IsInstalled() bool {
@@ -32,7 +32,7 @@ func maybeAppendClangStyleArgs(args []string) []string {
 	return args
 }
 
-func (F *ClangFormatter) FormatToBuffer(in io.Reader, out io.Writer) error {
+func (F *ClangFormatter) FormatToBuffer(file string, in io.Reader, out io.Writer) error {
 	args := maybeAppendClangStyleArgs([]string{"clang-format"})
 	return runIOCommand(args, in, out)
 }

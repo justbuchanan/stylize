@@ -1,13 +1,11 @@
 # Stylize [![circleci](https://circleci.com/gh/justbuchanan/stylize.svg?style=shield)](https://circleci.com/gh/justbuchanan/stylize) [![coveralls](https://coveralls.io/repos/justbuchanan/stylize/badge.svg?branch=master&service=github)](https://coveralls.io/github/justbuchanan/stylize?branch=master)
 
-
 Stylize quickly reformats or checkstyles an entire repository of code.
 It's a wrapper over other checkstyle programs such as `clang-format` or `yapf` that lets you use one command to operate on your entire repo, consisting of multiple types of files.
 
-
 ## Usage
 
-~~~.sh
+```.sh
 # install
 go get -u github.com/justbuchanan/stylize
 
@@ -25,23 +23,23 @@ stylize -i --exclude_dirs=build,external
 
 # reformat only files that differ from origin/master
 stylize -i --git_diffbase origin/master
-~~~
+```
 
 ## Configuration
 
 By default, `stylize` looks for a config file named `.stylize.yml` in the current directory. A different file can be specified with the `--config` flag. See `config.go` for what options are available and see this repo's `.stylize.yml` file as an example.
 
-
 ## Supported formatters
 
 Stylize currently has support for:
-* `buildifier`
-* `clang-format`
-* `gofmt`
-* `yapf`
+
+* [buildifier](https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md)
+* [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
+* [gofmt](https://golang.org/cmd/gofmt/)
+* [yapf](https://github.com/google/yapf)
+* [prettier](https://github.com/prettier/prettier)
 
 Other formatters can easily be added. See the \*\_formatter.go files as examples.
-
 
 ## Python version
 

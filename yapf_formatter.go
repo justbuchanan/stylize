@@ -32,7 +32,7 @@ func maybeAppendYapfStyleArgs(args []string) []string {
 	return args
 }
 
-func (F *YapfFormatter) FormatToBuffer(in io.Reader, out io.Writer) error {
+func (F *YapfFormatter) FormatToBuffer(file string, in io.Reader, out io.Writer) error {
 	args := maybeAppendYapfStyleArgs([]string{"yapf"})
 	return runIOCommand(args, in, out)
 }
