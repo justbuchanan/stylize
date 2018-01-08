@@ -34,9 +34,7 @@ func TestCreatePatch(t *testing.T) {
 
 	if *generateGoldens {
 		patchFile, err := os.Create(goldenFile)
-		if err != nil {
-			t.Fatal(err)
-		}
+		tCheckErr(t, err)
 		patchOut = patchFile
 		defer patchFile.Close()
 		t.Log("Writing golden file to %s", goldenFile)
@@ -83,25 +81,17 @@ func TestInPlaceWithConfig(t *testing.T) {
 
 	cfgPath := path.Join(dir, ".stylize.yml")
 	err := ioutil.WriteFile(cfgPath, []byte("---\nformatters:\n  .py: yapf\nexclude_dirs:\n  - exclude"), 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
+	tCheckErr(t, err)
 	t.Logf("Wrote config file: %s", cfgPath)
 
 	cfg, err := LoadConfig(cfgPath)
-	if err != nil {
-		t.Fatal(err)
-	}
+	tCheckErr(t, err)
 	t.Log("Read config file")
 
 	for i, edir := range cfg.ExcludeDirs {
 		cfg.ExcludeDirs[i] = filepath.Join(dir, edir)
 	}
 	t.Log("exclude: " + strings.Join(cfg.ExcludeDirs, ","))
-
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	formatters := LoadFormattersFromMapping(cfg.FormattersByExt)
 
@@ -156,9 +146,7 @@ func TestGitDiffbase(t *testing.T) {
 
 	// git diff
 	files, err := gitChangedFiles(dir, "HEAD")
-	if err != nil {
-		t.Fatal(err)
-	}
+	tCheckErr(t, err)
 
 	t.Logf("Files changed by stylize: %s", strings.Join(files, ", "))
 
@@ -200,11 +188,15 @@ func TestCollectPatch(t *testing.T) {
 	}
 }
 
-func mktmp(t *testing.T) string {
-	tmp, err := ioutil.TempDir("", "stylize")
+func tCheckErr(t *testing.T, err error) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func mktmp(t *testing.T) string {
+	tmp, err := ioutil.TempDir("", "stylize")
+	tCheckErr(t, err)
 
 	t.Log("tmp dir: " + tmp)
 	return tmp
@@ -213,9 +205,7 @@ func mktmp(t *testing.T) string {
 func copyTestData(t *testing.T, dir string) string {
 	cpCmd := exec.Command("cp", "-r", "testdata/", dir)
 	err := cpCmd.Run()
-	if err != nil {
-		t.Fatal(err)
-	}
+	tCheckErr(t, err)
 	return path.Join(dir, "testdata")
 }
 
@@ -233,9 +223,7 @@ func runCmd(t *testing.T, dir string, bin string, args ...string) {
 
 func assertGoldenMatch(t *testing.T, goldenFile string, genfileContent string) {
 	goldenContent, err := ioutil.ReadFile(goldenFile)
-	if err != nil {
-		t.Fatal(err)
-	}
+	tCheckErr(t, err)
 
 	diff, _ := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
 		A:        difflib.SplitLines(string(goldenContent)),
