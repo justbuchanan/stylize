@@ -5,5 +5,8 @@ formatters:
   .md: prettier
 exclude:
   - testdata
-clang_style: google
-yapf_style: pep8
+formatter_args:
+  clang:
+    - --style=google
+  yapf:
+    - --style=pep8

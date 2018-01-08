@@ -10,9 +10,9 @@ type Config struct {
 	FormattersByExt map[string]string `yaml:"formatters"`
 	ExcludePatterns []string          `yaml:"exclude"`
 
-	// TODO: do better
-	ClangStyle string `yaml:"clang_style"`
-	YapfStyle  string `yaml:"yapf_style"`
+	// Formatter arguments keyed by formatter name.
+	// Example: {"clang": ["--style", "google"]}
+	FormatterArgs map[string][]string `yaml:"formatter_args"`
 }
 
 // Read the config file. Check returned error with IsNotExist() to differentiate

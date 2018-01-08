@@ -2,8 +2,6 @@ package main
 
 // https://github.com/prettier/prettier
 
-// TODO: add configuration options
-
 import (
 	"io"
 	"os/exec"
@@ -28,10 +26,10 @@ func (F *PrettierFormatter) IsInstalled() bool {
 	return err == nil
 }
 
-func (F *PrettierFormatter) FormatToBuffer(file string, in io.Reader, out io.Writer) error {
-	return runIOCommand([]string{"prettier", "--stdin-filepath", file}, in, out)
+func (F *PrettierFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
+	return runIOCommand(append([]string{"prettier", "--stdin-filepath", file}, args...), in, out)
 }
 
-func (F *PrettierFormatter) FormatInPlace(file string) error {
-	return runIOCommand([]string{"prettier", "--write", file}, nil, nil)
+func (F *PrettierFormatter) FormatInPlace(args []string, file string) error {
+	return runIOCommand(append([]string{"prettier", "--write", file}, args...), nil, nil)
 }

@@ -42,17 +42,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// set style configs from config file
-	// TODO: do better
-	if cfg != nil {
-		if len(cfg.ClangStyle) > 0 && len(*clangStyleFlag) == 0 {
-			*clangStyleFlag = cfg.ClangStyle
-		}
-		if len(cfg.YapfStyle) > 0 && len(*yapfStyleFlag) == 0 {
-			*yapfStyleFlag = cfg.YapfStyle
-		}
-	}
-
 	var excludePatterns []string
 	// exclude dirs from config
 	if cfg != nil {
@@ -69,6 +58,11 @@ func main() {
 		formatters = LoadFormattersFromMapping(cfg.FormattersByExt)
 	} else {
 		formatters = LoadDefaultFormatters()
+	}
+
+	var formatterArgs map[string][]string
+	if cfg != nil {
+		formatterArgs = cfg.FormatterArgs
 	}
 
 	if *printFormattersFlag {
@@ -97,9 +91,9 @@ func main() {
 			defer patchFileOut.Close()
 			log.Printf("Writing patch to file %s", *patchFileFlag)
 		}
-		stats = StylizeMain(formatters, rootDir, excludePatterns, *diffbaseFlag, patchOut, *inPlaceFlag, *parallelismFlag)
+		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, *diffbaseFlag, patchOut, *inPlaceFlag, *parallelismFlag)
 	} else {
-		stats = StylizeMain(formatters, rootDir, excludePatterns, *diffbaseFlag, nil, *inPlaceFlag, *parallelismFlag)
+		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, *diffbaseFlag, nil, *inPlaceFlag, *parallelismFlag)
 	}
 
 	if stats.Error != 0 {

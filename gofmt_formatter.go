@@ -23,10 +23,10 @@ func (F *GolangFormatter) IsInstalled() bool {
 	return true
 }
 
-func (F *GolangFormatter) FormatToBuffer(file string, in io.Reader, out io.Writer) error {
+func (F *GolangFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
 	return runIOCommand([]string{"gofmt"}, in, out)
 }
 
-func (F *GolangFormatter) FormatInPlace(absPath string) error {
+func (F *GolangFormatter) FormatInPlace(args []string, absPath string) error {
 	return runIOCommand([]string{"gofmt", "-l", "-w", absPath}, nil, nil)
 }
