@@ -28,6 +28,6 @@ func (F *ClangFormatter) FormatToBuffer(args []string, file string, in io.Reader
 	return runIOCommand(append([]string{"clang-format"}, args...), in, out)
 }
 
-func (F *ClangFormatter) FormatInPlace(args []string, absPath string) error {
-	return runIOCommand(append([]string{"clang-format", "-i", absPath}, args...), nil, nil)
+func (F *ClangFormatter) FormatInPlace(args []string, file string) error {
+	return runIOCommand(append([]string{"clang-format", "-i", file}, args...), nil, nil)
 }

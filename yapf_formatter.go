@@ -29,6 +29,6 @@ func (F *YapfFormatter) FormatToBuffer(args []string, file string, in io.Reader,
 	return runIOCommand(args2, in, out)
 }
 
-func (F *YapfFormatter) FormatInPlace(args []string, absPath string) error {
-	return runIOCommand(append([]string{"yapf", "-i", absPath}, args...), nil, nil)
+func (F *YapfFormatter) FormatInPlace(args []string, file string) error {
+	return runIOCommand(append([]string{"yapf", "-i", file}, args...), nil, nil)
 }
