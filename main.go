@@ -11,6 +11,9 @@ import (
 )
 
 func main() {
+	// Remove date/time from logs
+	log.SetFlags(0)
+
 	flag.Usage = func() {
 		fmt.Fprintln(os.Stderr, "Stylize - code formatting tool")
 		flag.PrintDefaults()
@@ -70,9 +73,9 @@ func main() {
 	}
 
 	if *printFormattersFlag {
-		fmt.Fprintln(os.Stderr, "Formatters:")
+		log.Println("Formatters:")
 		for ext, formatter := range formatters {
-			fmt.Fprintf(os.Stderr, "%s: %s\n", ext, formatter.Name())
+			log.Printf("%s: %s\n", ext, formatter.Name())
 		}
 		os.Exit(1)
 	}
