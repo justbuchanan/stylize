@@ -27,7 +27,7 @@ stylize -i --git_diffbase origin/master
 
 ## Configuration
 
-By default, `stylize` looks for a config file named `.stylize.yml` in the current directory. A different file can be specified with the `--config` flag. See `config.go` for what options are available and see this repo's `.stylize.yml` file as an example.
+By default, `stylize` looks for a config file named `.stylize.yml` in the current directory. A different file can be specified with the `--config` flag. See [`config.go`](config.go) for what options are available and see this repo's [`.stylize.yml`](.stylize.yml) file as an example.
 
 ## Supported formatters
 

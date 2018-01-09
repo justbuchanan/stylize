@@ -1,10 +1,26 @@
 ---
+# Provide a map of extension -> formatter that we want to enable. If
+# "formatters" is left out of the config file, the default behavior is to enable
+# all formatters.
+#
+# Note: Run `stylize --print_formatters` to see a list of what formatters are
+# currently supported/installed.
 formatters:
   .py: yapf
   .go: gofmt
   .md: prettier
+# Exclude is a list of file patterns that stylize should not consider. Behind
+# the scenes, a variant of `fnmatch` is used, so documentation on fnmatch should
+# be relevant here (see https://linux.die.net/man/3/fnmatch).
+# Here are a few examples:
+#   file.cpp      # filenames
+#   proj/file.cpp # filenames inside of directories
+#   proj          # Entire directories (assuming in this cas that "proj" refers to a directory)
+#   *.c           # Wildcard file patterns
 exclude:
   - testdata
+# Lists of additional arguments to pass to certain formatters. This section is
+# optional, but can be used to pass style configs, etc to the relevant programs.
 formatter_args:
   clang:
     - --style=google
