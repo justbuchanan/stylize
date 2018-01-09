@@ -1,5 +1,21 @@
 package main
 
+// This file contains the main logic of the program. In general this is setup as
+// a "pipeline" system, meaning that functions consume input channels and send
+// their results to a returned output channel.
+//
+// The first stage is a file input. We either recursively search a given source
+// directory or we use git to get a list of files that have changed since a
+// given diffbase. Each of these inputs modes corresponds to a function that
+// returns a channel of strings, on which will be sent a series of file paths to
+// format/check.
+//
+// The next stage runs a pool of formatters asynchronously on the input file
+// paths. The formatting/checking results are then forwared to an output
+// channel.
+//
+// From there, further operations collect stats, diffs, and log actions.
+
 import (
 	"bytes"
 	"fmt"
