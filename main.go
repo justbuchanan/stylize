@@ -16,11 +16,15 @@ func main() {
 		flag.PrintDefaults()
 	}
 	inPlaceFlag := flag.Bool("i", false, "[WARNING] There's no undo button, make a commit first. If enabled, formats files in place. Default behavior is just to check which files need formatting.")
-	patchFileFlag := flag.String("patch_output", "", "Path to output patch to. If '-', writes to stdout.")
+	var patchFile string
+	flag.StringVar(&patchFile, "patch_output", "", "Path to output patch to. If '-', writes to stdout.")
+	flag.StringVar(&patchFile, "o", "", "Alias for patch_output")
 	configFileFlag := flag.String("config", ".stylize.yml", "Optional config file (defaults to .stylize.yml).")
 	dirFlag := flag.String("dir", ".", "Directory to recursively format.")
 	excludeFlag := flag.String("exclude", "", "A list of exclude patterns (comma-separated).")
-	diffbaseFlag := flag.String("git_diffbase", "", "If provided, stylize only looks at files that differ from the given commit/branch.")
+	var diffbase string
+	flag.StringVar(&diffbase, "git_diffbase", "", "If provided, stylize only looks at files that differ from the given commit/branch.")
+	flag.StringVar(&diffbase, "g", "", "Alias for git_diffbase")
 	parallelismFlag := flag.Int("j", 8, "Number of files to process in parallel.")
 	printFormattersFlag := flag.Bool("print_formatters", false, "Print map of file extension to formatter, then exit.")
 	flag.Parse()
@@ -74,26 +78,26 @@ func main() {
 	}
 
 	var stats RunStats
-	if !*inPlaceFlag && len(*patchFileFlag) > 0 {
+	if !*inPlaceFlag && len(patchFile) > 0 {
 		// Setup patch output writer
 		var err error
 		var patchOut io.Writer
-		if *patchFileFlag == "-" {
+		if patchFile == "-" {
 			patchOut = os.Stdout
 			log.Print("Writing patch to stdout")
 		} else {
 			var patchFileOut *os.File
-			patchFileOut, err = os.Create(*patchFileFlag)
+			patchFileOut, err = os.Create(patchFile)
 			patchOut = patchFileOut
 			if err != nil {
 				log.Fatal(err)
 			}
 			defer patchFileOut.Close()
-			log.Printf("Writing patch to file %s", *patchFileFlag)
+			log.Printf("Writing patch to file %s", patchFile)
 		}
-		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, *diffbaseFlag, patchOut, *inPlaceFlag, *parallelismFlag)
+		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, diffbase, patchOut, *inPlaceFlag, *parallelismFlag)
 	} else {
-		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, *diffbaseFlag, nil, *inPlaceFlag, *parallelismFlag)
+		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, diffbase, nil, *inPlaceFlag, *parallelismFlag)
 	}
 
 	if stats.Error != 0 {

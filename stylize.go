@@ -281,11 +281,13 @@ func StylizeMain(formatters map[string]Formatter, formatterArgs map[string][]str
 	var err error
 	var fileChan <-chan string
 	if len(gitDiffbase) > 0 {
+		log.Printf("Examining files that have changed in git since %s", gitDiffbase)
 		fileChan, err = IterateGitChangedFiles(rootDir, exclude, gitDiffbase)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
+		log.Print("Examining all files")
 		fileChan = IterateAllFiles(rootDir, exclude)
 	}
 
