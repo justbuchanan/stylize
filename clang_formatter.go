@@ -7,10 +7,6 @@ import (
 
 type ClangFormatter struct{}
 
-func init() {
-	RegisterFormatter(&ClangFormatter{})
-}
-
 func (F *ClangFormatter) Name() string {
 	return "clang"
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -23,6 +24,7 @@ func runIOCommand(args []string, in io.Reader, out io.Writer) error {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
+		log.Print("Error running command: ", strings.Join(args, " "))
 		return errors.Wrap(err, stderr.String())
 	}
 

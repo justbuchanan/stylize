@@ -7,10 +7,6 @@ import (
 
 type BuildifierFormatter struct{}
 
-func init() {
-	RegisterFormatter(&BuildifierFormatter{})
-}
-
 func (F *BuildifierFormatter) Name() string {
 	return "buildifier"
 }

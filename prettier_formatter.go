@@ -9,10 +9,6 @@ import (
 
 type PrettierFormatter struct{}
 
-func init() {
-	RegisterFormatter(&PrettierFormatter{})
-}
-
 func (F *PrettierFormatter) Name() string {
 	return "prettier"
 }

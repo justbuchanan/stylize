@@ -12,8 +12,8 @@ import (
 
 // Common interface for all formatters.
 //
-// New formatters can be added by implementing this interface and registering an
-// instance with RegisterFormatter().
+// A new formatter can be added by implementing this interface and adding it to
+// the global registry.
 type Formatter interface {
 	Name() string
 	// Reads the input stream and writes a prettified version to the output.
@@ -73,12 +73,21 @@ func CreatePatchWithFormatter(F Formatter, args []string, wdir, file string) (st
 	return diff, nil
 }
 
+func LookupFormatter(name string) Formatter {
+	for _, f := range FormatterRegistry {
+		if f.Name() == name {
+			return f
+		}
+	}
+	return nil
+}
+
 // Returns a map of file extension to formatter for the ones specied in the
 // input mapping.
 func LoadFormattersFromMapping(extToName map[string]string) map[string]Formatter {
 	byExt := make(map[string]Formatter)
 	for ext, name := range extToName {
-		formatter := FormatterRegistry[name]
+		formatter := LookupFormatter(name)
 		if formatter == nil {
 			log.Fatalf("Unknown formatter: %s", name)
 		}
@@ -98,15 +107,16 @@ func LoadFormattersFromMapping(extToName map[string]string) map[string]Formatter
 // the registry.
 func LoadDefaultFormatters() map[string]Formatter {
 	byExt := make(map[string]Formatter)
-	for name, f := range FormatterRegistry {
+	for _, f := range FormatterRegistry {
 		if !f.IsInstalled() {
-			log.Printf("Skipping formatter %s b/c it's not installed", name)
+			log.Printf("Skipping formatter %s b/c it's not installed", f.Name())
 			continue
 		}
 
 		for _, ext := range f.FileExtensions() {
 			if byExt[ext] != nil {
-				log.Fatalf("Multiple formatters for extension '%s'", ext)
+				// log.Printf("Multiple formatters for extension '%s'", ext)
+				continue
 			}
 
 			byExt[ext] = f
@@ -116,14 +126,16 @@ func LoadDefaultFormatters() map[string]Formatter {
 	return byExt
 }
 
-func RegisterFormatter(f Formatter) {
-	if FormatterRegistry[f.Name()] != nil {
-		log.Fatalf("Attempt to double-register formatter '%s'\n", f.Name())
-	}
-	FormatterRegistry[f.Name()] = f
-}
-
 var (
-	// Formatters by name.
-	FormatterRegistry = make(map[string]Formatter)
+	// Global list of all formatters.
+	// If multiple formatters apply to the same file type, their order here
+	// determines precedence.
+	FormatterRegistry = []Formatter{
+		&ClangFormatter{},
+		&UncrustifyFormatter{},
+		&PrettierFormatter{},
+		&YapfFormatter{},
+		&GofmtFormatter{},
+		&BuildifierFormatter{},
+	}
 )

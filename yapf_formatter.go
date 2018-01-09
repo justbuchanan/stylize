@@ -7,10 +7,6 @@ import (
 
 type YapfFormatter struct{}
 
-func init() {
-	RegisterFormatter(&YapfFormatter{})
-}
-
 func (F *YapfFormatter) Name() string {
 	return "yapf"
 }

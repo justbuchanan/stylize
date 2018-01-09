@@ -4,29 +4,25 @@ import (
 	"io"
 )
 
-type GolangFormatter struct{}
+type GofmtFormatter struct{}
 
-func init() {
-	RegisterFormatter(&GolangFormatter{})
-}
-
-func (F *GolangFormatter) Name() string {
+func (F *GofmtFormatter) Name() string {
 	return "gofmt"
 }
 
-func (F *GolangFormatter) FileExtensions() []string {
+func (F *GofmtFormatter) FileExtensions() []string {
 	return []string{".go"}
 }
 
-func (F *GolangFormatter) IsInstalled() bool {
+func (F *GofmtFormatter) IsInstalled() bool {
 	// if we're running go code, then gofmt has to be here...
 	return true
 }
 
-func (F *GolangFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
+func (F *GofmtFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
 	return runIOCommand([]string{"gofmt"}, in, out)
 }
 
-func (F *GolangFormatter) FormatInPlace(args []string, absPath string) error {
+func (F *GofmtFormatter) FormatInPlace(args []string, absPath string) error {
 	return runIOCommand([]string{"gofmt", "-l", "-w", absPath}, nil, nil)
 }

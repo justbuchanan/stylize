@@ -38,6 +38,7 @@ Stylize currently has support for:
 * [gofmt](https://golang.org/cmd/gofmt/)
 * [yapf](https://github.com/google/yapf)
 * [prettier](https://github.com/prettier/prettier)
+* [uncrustify](https://github.com/uncrustify/uncrustify)
 
 Other formatters can easily be added. See the \*\_formatter.go files as examples.
 
