@@ -77,7 +77,7 @@ func main() {
 		for ext, formatter := range formatters {
 			log.Printf("%s: %s\n", ext, formatter.Name())
 		}
-		os.Exit(1)
+		os.Exit(0)
 	}
 
 	var stats RunStats
