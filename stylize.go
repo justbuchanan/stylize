@@ -58,15 +58,9 @@ func IterateAllFiles(rootDir string, exclude []string) <-chan string {
 				return filepath.SkipDir
 			}
 
-			if fileIsExcluded(relPath, exclude) {
-				return nil
+			if !fileIsExcluded(relPath, exclude) && !fi.IsDir() {
+				files <- relPath
 			}
-
-			if fi.IsDir() {
-				return nil
-			}
-
-			files <- relPath
 
 			return nil
 		})
