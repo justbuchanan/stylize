@@ -201,7 +201,7 @@ func TestCollectPatch(t *testing.T) {
 	var patchOut bytes.Buffer
 	resultsAfterPatch := CollectPatch(results, &patchOut)
 	// consume results to run pipeline
-	for _ = range resultsAfterPatch {
+	for range resultsAfterPatch {
 	}
 
 	expected := "diff1\ndiff2\n\ndiff3\ndiff4\n\n"
