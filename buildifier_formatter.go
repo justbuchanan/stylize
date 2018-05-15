@@ -12,7 +12,7 @@ func (F *BuildifierFormatter) Name() string {
 }
 
 func (F *BuildifierFormatter) FileExtensions() []string {
-	return []string{".BUILD", "WORKSPACE", "BUILD"}
+	return []string{".BUILD", ".bzl", "WORKSPACE", "BUILD"}
 }
 
 func (F *BuildifierFormatter) IsInstalled() bool {
