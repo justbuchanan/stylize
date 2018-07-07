@@ -13,7 +13,7 @@ jobs:
             - run: mkdir -p $CIRCLE_ARTIFACTS
 
             # install deps
-            - run: pacman -Sy --noconfirm clang python-pip go git npm
+            - run: pacman -Sy --noconfirm clang python-pip go git npm rust
             - run: pip install yapf
             - run: npm install -g prettier
             - run: go get -u github.com/bazelbuild/buildtools/buildifier

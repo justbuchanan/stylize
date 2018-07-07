@@ -137,5 +137,6 @@ var (
 		&YapfFormatter{},
 		&GofmtFormatter{},
 		&BuildifierFormatter{},
+		&RustfmtFormatter{},
 	}
 )
