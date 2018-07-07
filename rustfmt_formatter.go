@@ -21,9 +21,9 @@ func (F *RustfmtFormatter) IsInstalled() bool {
 }
 
 func (F *RustfmtFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
-	return runIOCommand([]string{"rustfmt"}, in, out)
+	return runIOCommand(append([]string{"rustfmt"}, args...), in, out)
 }
 
 func (F *RustfmtFormatter) FormatInPlace(args []string, absPath string) error {
-	return runIOCommand([]string{"rustfmt", absPath}, nil, nil)
+	return runIOCommand(append([]string{"rustfmt", absPath}, args...), nil, nil)
 }
