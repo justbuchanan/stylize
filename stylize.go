@@ -11,7 +11,7 @@ package main
 // format/check.
 //
 // The next stage runs a pool of formatters asynchronously on the input file
-// paths. The formatting/checking results are then forwared to an output
+// paths. The formatting/checking results are then forwarded to an output
 // channel.
 //
 // From there, further operations collect stats, diffs, and log actions.
