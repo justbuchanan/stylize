@@ -33,13 +33,13 @@ By default, `stylize` looks for a config file named `.stylize.yml` in the curren
 
 Stylize currently has support for:
 
-*   [buildifier](https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md)
-*   [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
-*   [gofmt](https://golang.org/cmd/gofmt/)
-*   [yapf](https://github.com/google/yapf)
-*   [prettier](https://github.com/prettier/prettier)
-*   [uncrustify](https://github.com/uncrustify/uncrustify)
-*   [rustfmt](https://github.com/rust-lang-nursery/rustfmt)
+-   [buildifier](https://github.com/bazelbuild/buildtools/blob/master/buildifier/README.md)
+-   [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
+-   [gofmt](https://golang.org/cmd/gofmt/)
+-   [yapf](https://github.com/google/yapf)
+-   [prettier](https://github.com/prettier/prettier)
+-   [uncrustify](https://github.com/uncrustify/uncrustify)
+-   [rustfmt](https://github.com/rust-lang-nursery/rustfmt)
 
 Other formatters can easily be added. See the \*\_formatter.go files as examples.
 
