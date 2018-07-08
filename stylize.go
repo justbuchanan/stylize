@@ -19,8 +19,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/bradfitz/slice"
-	"github.com/pkg/errors"
 	"io"
 	"log"
 	"os"
@@ -29,6 +27,9 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+
+	"github.com/bradfitz/slice"
+	"github.com/pkg/errors"
 )
 
 type FormattingResult struct {
@@ -53,12 +54,16 @@ func IterateAllFiles(rootDir string, exclude []string) <-chan string {
 
 			relPath, _ := filepath.Rel(rootDir, path)
 
+			// TODO: specify vcs excludes elsewhere?
 			exclude = append(exclude, ".git", ".hg")
-			if fi.IsDir() && fileIsExcluded(relPath, exclude) {
+			isExcluded := fileIsExcluded(relPath, exclude)
+
+			// Skip the entire directory
+			if fi.IsDir() && isExcluded {
 				return filepath.SkipDir
 			}
 
-			if !fileIsExcluded(relPath, exclude) && !fi.IsDir() {
+			if !isExcluded && !fi.IsDir() {
 				files <- relPath
 			}
 
@@ -130,9 +135,7 @@ func runFormatter(rootDir, file string, formatter Formatter, formatterArgs []str
 		result.FormatNeeded, result.Error = FormatInPlaceAndCheckModified(formatter, formatterArgs, filepath.Join(rootDir, file))
 	} else {
 		result.Patch, result.Error = CreatePatchWithFormatter(formatter, formatterArgs, rootDir, file)
-		if len(result.Patch) > 0 {
-			result.FormatNeeded = true
-		}
+		result.FormatNeeded = len(result.Patch) > 0
 	}
 
 	return result
@@ -147,21 +150,21 @@ func CollectPatch(results <-chan FormattingResult, patchOut io.Writer) <-chan Fo
 		defer close(resultsOut)
 
 		// collect relevant results from the input channel and forward them to the output
-		var resultList []FormattingResult
+		var formattedResults []FormattingResult
 		for r := range results {
 			if r.Error == nil && r.FormatNeeded {
-				resultList = append(resultList, r)
+				formattedResults = append(formattedResults, r)
 			}
 			resultsOut <- r
 		}
 
 		// sort to ensure patches are consistent
-		slice.Sort(resultList, func(i, j int) bool {
-			return resultList[i].FilePath < resultList[j].FilePath
+		slice.Sort(formattedResults, func(i, j int) bool {
+			return formattedResults[i].FilePath < formattedResults[j].FilePath
 		})
 
 		// write patch output
-		for _, r := range resultList {
+		for _, r := range formattedResults {
 			patchOut.Write([]byte(r.Patch + "\n"))
 		}
 	}()
@@ -174,7 +177,7 @@ func RunFormattersOnFiles(formatters map[string]Formatter, formatterArgs map[str
 	semaphore := make(chan int, parallelism)
 	var wg sync.WaitGroup
 
-	resultOut := make(chan FormattingResult)
+	resulstOut := make(chan FormattingResult)
 	go func() {
 		for file := range fileChan {
 			ext := filepath.Ext(file)
@@ -190,17 +193,17 @@ func RunFormattersOnFiles(formatters map[string]Formatter, formatterArgs map[str
 			wg.Add(1)
 			semaphore <- 0 // acquire
 			go func(file string, formatter Formatter, inPlace bool) {
-				resultOut <- runFormatter(rootDir, file, formatter, formatterArgs[formatter.Name()], inPlace)
+				resulstOut <- runFormatter(rootDir, file, formatter, formatterArgs[formatter.Name()], inPlace)
 				wg.Done()
 				<-semaphore // release
 			}(file, formatter, inPlace)
 		}
 
 		wg.Wait()
-		close(resultOut)
+		close(resulstOut)
 	}()
 
-	return resultOut
+	return resulstOut
 }
 
 type RunStats struct {

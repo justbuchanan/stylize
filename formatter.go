@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
-	"github.com/pmezard/go-difflib/difflib"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/pmezard/go-difflib/difflib"
 )
 
 // Common interface for all formatters.
