@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/justbuchanan/stylize/formatters"
 	"github.com/pmezard/go-difflib/difflib"
 )
 
@@ -132,12 +133,12 @@ var (
 	// If multiple formatters apply to the same file type, their order here
 	// determines precedence. Lower index = higher priority.
 	FormatterRegistry = []Formatter{
-		&ClangFormatter{},
-		&UncrustifyFormatter{},
-		&PrettierFormatter{},
-		&YapfFormatter{},
-		&GofmtFormatter{},
-		&BuildifierFormatter{},
-		&RustfmtFormatter{},
+		&formatters.ClangFormatter{},
+		&formatters.UncrustifyFormatter{},
+		&formatters.PrettierFormatter{},
+		&formatters.YapfFormatter{},
+		&formatters.GofmtFormatter{},
+		&formatters.BuildifierFormatter{},
+		&formatters.RustfmtFormatter{},
 	}
 )

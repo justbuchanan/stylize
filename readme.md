@@ -41,7 +41,7 @@ Stylize currently has support for:
 -   [uncrustify](https://github.com/uncrustify/uncrustify)
 -   [rustfmt](https://github.com/rust-lang-nursery/rustfmt)
 
-Other formatters can easily be added. See the \*\_formatter.go files as examples.
+Other formatters can easily be added. See the files in the 'formatters' directory as examples.
 
 ## Python version
 

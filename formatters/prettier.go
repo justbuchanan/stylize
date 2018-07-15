@@ -1,4 +1,4 @@
-package main
+package formatters
 
 // https://github.com/prettier/prettier
 
