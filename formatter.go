@@ -130,7 +130,7 @@ func LoadDefaultFormatters() map[string]Formatter {
 var (
 	// Global list of all formatters.
 	// If multiple formatters apply to the same file type, their order here
-	// determines precedence.
+	// determines precedence. Lower index = higher priority.
 	FormatterRegistry = []Formatter{
 		&ClangFormatter{},
 		&UncrustifyFormatter{},
