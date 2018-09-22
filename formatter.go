@@ -137,6 +137,7 @@ var (
 		&formatters.UncrustifyFormatter{},
 		&formatters.PrettierFormatter{},
 		&formatters.YapfFormatter{},
+		&formatters.BlackFormatter{},
 		&formatters.GofmtFormatter{},
 		&formatters.BuildifierFormatter{},
 		&formatters.RustfmtFormatter{},
