@@ -1,7 +1,7 @@
 version: 2
 jobs:
     build:
-        working_directory: /go/src/github.com/justbuchanan/stylize
+        working_directory: /stylize
         docker:
             - image: justbuchanan/docker-archlinux
         steps:
@@ -14,6 +14,7 @@ jobs:
 
             # install deps
             - run: pacman -Sy --noconfirm clang python-pip go git npm rust
+            - run: go version
             - run: pip install yapf
             - run: npm install -g prettier
             - run: go get -u github.com/bazelbuild/buildtools/buildifier
@@ -26,9 +27,6 @@ jobs:
             # setup git
             - run: git config --global user.email "ci@circle"
             - run: git config --global user.name "Circle Ci"
-
-            # install stylize deps
-            - run: go get -t ./...
 
             - run: ci-status --context build --description "go build" "go build"
 
