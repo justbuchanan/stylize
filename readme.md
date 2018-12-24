@@ -5,7 +5,7 @@ It's a wrapper over other checkstyle programs such as `clang-format` or `yapf` t
 
 ## Usage
 
-```.sh
+```bash
 # install
 go get -u github.com/justbuchanan/stylize
 
@@ -40,6 +40,7 @@ Stylize currently has support for:
 -   [prettier](https://github.com/prettier/prettier)
 -   [uncrustify](https://github.com/uncrustify/uncrustify)
 -   [rustfmt](https://github.com/rust-lang-nursery/rustfmt)
+-   [black](https://github.com/ambv/black)
 
 Other formatters can easily be added. See the files in the 'formatters' directory as examples.
 
