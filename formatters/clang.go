@@ -12,7 +12,7 @@ func (F *ClangFormatter) Name() string {
 }
 
 func (F *ClangFormatter) FileExtensions() []string {
-	return []string{".h", ".hpp", ".c", ".cc", ".cpp", ".proto", ".java"}
+	return []string{".h", ".hpp", ".c", ".cc", ".cpp", ".cxx", ".hxx", ".proto", ".java"}
 }
 
 func (F *ClangFormatter) IsInstalled() bool {
