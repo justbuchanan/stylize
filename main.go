@@ -75,7 +75,11 @@ func main() {
 	if *printFormattersFlag {
 		log.Println("Formatters:")
 		for ext, formatter := range formatters {
-			log.Printf("%s: %s\n", ext, formatter.Name())
+			installedMsg := ""
+			if formatter.IsInstalled() {
+				installedMsg = " [Installed]"
+			}
+			log.Printf("%s: %s%s\n", ext, formatter.Name(), installedMsg)
 		}
 		os.Exit(0)
 	}
