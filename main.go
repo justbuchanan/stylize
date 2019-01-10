@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -86,28 +85,35 @@ func main() {
 		os.Exit(0)
 	}
 
+	ctx := StylizeContext{
+		RootDir: rootDir,
+		Exclude: excludePatterns,
+		Formatters: formatters,
+		FormatterArgs: formatterArgs,
+		GitDiffbase: diffbase,
+		InPlace: *inPlaceFlag,
+		Parallelism: *parallelismFlag,
+	}
+
 	var stats RunStats
 	if !*inPlaceFlag && len(patchFile) > 0 {
 		// Setup patch output writer
 		var err error
-		var patchOut io.Writer
 		if patchFile == "-" {
-			patchOut = os.Stdout
+			ctx.PatchOut = os.Stdout
 			log.Print("Writing patch to stdout")
 		} else {
 			var patchFileOut *os.File
 			patchFileOut, err = os.Create(patchFile)
-			patchOut = patchFileOut
+			ctx.PatchOut = patchFileOut
 			if err != nil {
 				log.Fatal(err)
 			}
 			defer patchFileOut.Close()
 			log.Printf("Writing patch to file %s", patchFile)
 		}
-		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, diffbase, patchOut, *inPlaceFlag, *parallelismFlag)
-	} else {
-		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, diffbase, nil, *inPlaceFlag, *parallelismFlag)
 	}
+	stats = ctx.Run()
 
 	if stats.Error != 0 {
 		os.Exit(1)
