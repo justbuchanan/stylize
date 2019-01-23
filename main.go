@@ -21,8 +21,10 @@ func main() {
 	inPlaceFlag := flag.Bool("i", false, "[WARNING] There's no undo button, make a commit first. If enabled, formats files in place. Default behavior is just to check which files need formatting.")
 	var patchFile string
 	flag.StringVar(&patchFile, "patch_output", "", "Path to output patch to. If '-', writes to stdout.")
-	flag.StringVar(&patchFile, "o", "", "Alias for patch_output")
-	configFileFlag := flag.String("config", ".stylize.yml", "Optional config file (defaults to .stylize.yml).")
+	flag.StringVar(&patchFile, "o", "", "Alias for --patch_output")
+	var configFile string
+	flag.StringVar(&configFile, "config", ".stylize.yml", "Optional config file (defaults to .stylize.yml).")
+	flag.StringVar(&configFile, "c", ".stylize.yml", "Alias for --config")
 	dirFlag := flag.String("dir", ".", "Directory to recursively format.")
 	excludeFlag := flag.String("exclude", "", "A list of exclude patterns (comma-separated).")
 	var diffbase string
@@ -33,7 +35,7 @@ func main() {
 	flag.Parse()
 
 	// Read config file
-	cfg, err := LoadConfig(*configFileFlag)
+	cfg, err := LoadConfig(configFile)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			log.Fatal(err)
@@ -41,7 +43,7 @@ func main() {
 			// log.Print("No config file")
 		}
 	} else {
-		log.Printf("Loaded config from file %s", *configFileFlag)
+		log.Printf("Loaded config from file %s", configFile)
 	}
 
 	rootDir, err := filepath.Abs(*dirFlag)
