@@ -39,6 +39,26 @@ type FormattingResult struct {
 	Error        error
 }
 
+// All parameters are required!
+type StylizeContext struct {
+	// The set of formatters to apply, keyed by file extension.
+	Formatters map[string]Formatter
+	// Command-line args to pass to each formatter, keyed by formatter name.
+	FormatterArgs map[string][]string
+	// Root directory to search for files under.
+	RootDir string
+	// File exclude patterns
+	Exclude []string
+	// If provided, only looks at files that differ from the diffbase. Otherwise looks at all files.
+	GitDiffbase string
+	// If given, a patch is written to the output showing changes that the formatters would make.
+	PatchOut io.Writer
+	// If true, formats all files in-place rather than performing a compliance check.
+	InPlace bool
+	// How many files to format simultaneously.
+	Parallelism int
+}
+
 // Walks the given directory and sends all non-excluded files to the returned channel.
 // @param rootDir absolute path to root directory
 // @return file paths relative to rootDir
@@ -53,9 +73,6 @@ func IterateAllFiles(rootDir string, exclude []string) <-chan string {
 			}
 
 			relPath, _ := filepath.Rel(rootDir, path)
-
-			// TODO: specify vcs excludes elsewhere?
-			exclude = append(exclude, ".git", ".hg")
 			isExcluded := fileIsExcluded(relPath, exclude)
 
 			// Skip the entire directory
@@ -150,21 +167,21 @@ func CollectPatch(results <-chan FormattingResult, patchOut io.Writer) <-chan Fo
 		defer close(resultsOut)
 
 		// collect relevant results from the input channel and forward them to the output
-		var formattedResults []FormattingResult
+		var formatResults []FormattingResult
 		for r := range results {
 			if r.Error == nil && r.FormatNeeded {
-				formattedResults = append(formattedResults, r)
+				formatResults = append(formatResults, r)
 			}
 			resultsOut <- r
 		}
 
 		// sort to ensure patches are consistent
-		slice.Sort(formattedResults, func(i, j int) bool {
-			return formattedResults[i].FilePath < formattedResults[j].FilePath
+		slice.Sort(formatResults, func(i, j int) bool {
+			return formatResults[i].FilePath < formatResults[j].FilePath
 		})
 
 		// write patch output
-		for _, r := range formattedResults {
+		for _, r := range formatResults {
 			patchOut.Write([]byte(r.Patch + "\n"))
 		}
 	}()
@@ -172,9 +189,9 @@ func CollectPatch(results <-chan FormattingResult, patchOut io.Writer) <-chan Fo
 	return resultsOut
 }
 
-func RunFormattersOnFiles(formatters map[string]Formatter, formatterArgs map[string][]string, fileChan <-chan string, rootDir string, inPlace bool, parallelism int) <-chan FormattingResult {
+func (ctx *StylizeContext) RunFormattersOnFiles(fileChan <-chan string) <-chan FormattingResult {
 	// use semaphore to limit how many formatting operations we run in parallel
-	semaphore := make(chan int, parallelism)
+	semaphore := make(chan int, ctx.Parallelism)
 	var wg sync.WaitGroup
 
 	resulstOut := make(chan FormattingResult)
@@ -185,7 +202,7 @@ func RunFormattersOnFiles(formatters map[string]Formatter, formatterArgs map[str
 				// if file doesn't have an extension, use the file name
 				ext = filepath.Base(file)
 			}
-			formatter := formatters[ext]
+			formatter := ctx.Formatters[ext]
 			if formatter == nil {
 				continue
 			}
@@ -193,10 +210,10 @@ func RunFormattersOnFiles(formatters map[string]Formatter, formatterArgs map[str
 			wg.Add(1)
 			semaphore <- 0 // acquire
 			go func(file string, formatter Formatter, inPlace bool) {
-				resulstOut <- runFormatter(rootDir, file, formatter, formatterArgs[formatter.Name()], inPlace)
+				resulstOut <- runFormatter(ctx.RootDir, file, formatter, ctx.FormatterArgs[formatter.Name()], ctx.InPlace)
 				wg.Done()
 				<-semaphore // release
-			}(file, formatter, inPlace)
+			}(file, formatter, ctx.InPlace)
 		}
 
 		wg.Wait()
@@ -276,15 +293,15 @@ func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) Ru
 //     diffbase. Otherwise looks at all files.
 // @param formatters A map of file extension -> formatter
 // @return (changeCount, totalCount, errCount)
-func StylizeMain(formatters map[string]Formatter, formatterArgs map[string][]string, rootDir string, exclude []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) RunStats {
-	if inPlace && patchOut != nil {
+func (ctx *StylizeContext) Run() RunStats {
+	if ctx.InPlace && ctx.PatchOut != nil {
 		log.Fatal("Patch output writer should only be provided in non-inplace runs")
 	}
-	if !filepath.IsAbs(rootDir) {
-		log.Fatalf("root directory should be an absolute path: '%s'", rootDir)
+	if !filepath.IsAbs(ctx.RootDir) {
+		log.Fatalf("root directory should be an absolute path: '%s'", ctx.RootDir)
 	}
 
-	for _, excl := range exclude {
+	for _, excl := range ctx.Exclude {
 		if filepath.IsAbs(excl) {
 			log.Fatal("exclude directories should not be absolute")
 		}
@@ -293,24 +310,24 @@ func StylizeMain(formatters map[string]Formatter, formatterArgs map[string][]str
 	// setup file source
 	var err error
 	var fileChan <-chan string
-	if len(gitDiffbase) > 0 {
-		log.Printf("Examining files that have changed in git since %s", gitDiffbase)
-		fileChan, err = IterateGitChangedFiles(rootDir, exclude, gitDiffbase)
+	if len(ctx.GitDiffbase) > 0 {
+		log.Printf("Examining files that have changed in git since %s", ctx.GitDiffbase)
+		fileChan, err = IterateGitChangedFiles(ctx.RootDir, ctx.Exclude, ctx.GitDiffbase)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
 		log.Print("Examining all files")
-		fileChan = IterateAllFiles(rootDir, exclude)
+		fileChan = IterateAllFiles(ctx.RootDir, ctx.Exclude)
 	}
 
 	// run formatter on all files
-	results := RunFormattersOnFiles(formatters, formatterArgs, fileChan, rootDir, inPlace, parallelism)
+	results := ctx.RunFormattersOnFiles(fileChan)
 
 	// write patch to output if requested
-	if patchOut != nil {
-		results = CollectPatch(results, patchOut)
+	if ctx.PatchOut != nil {
+		results = CollectPatch(results, ctx.PatchOut)
 	}
 
-	return LogActionsAndCollectStats(results, inPlace)
+	return LogActionsAndCollectStats(results, ctx.InPlace)
 }

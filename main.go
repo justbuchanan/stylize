@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -37,75 +36,72 @@ func main() {
 	// Read config file
 	cfg, err := LoadConfig(configFile)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			log.Fatal(err)
-		} else {
+		if os.IsNotExist(err) {
 			// log.Print("No config file")
+		} else {
+			log.Fatal(err)
 		}
 	} else {
 		log.Printf("Loaded config from file %s", configFile)
 	}
 
-	rootDir, err := filepath.Abs(*dirFlag)
-	if err != nil {
+	ctx := StylizeContext{
+		GitDiffbase: diffbase,
+		InPlace:     *inPlaceFlag,
+		Parallelism: *parallelismFlag,
+	}
+
+	if ctx.RootDir, err = filepath.Abs(*dirFlag); err != nil {
 		log.Fatal(err)
 	}
 
-	var excludePatterns []string
-	// exclude dirs from config
+	// Exclude common vcs directories
+	ctx.Exclude = append(ctx.Exclude, ".git", ".hg")
+
 	if cfg != nil {
-		excludePatterns = append(excludePatterns, cfg.ExcludePatterns...)
+		ctx.Exclude = append(ctx.Exclude, cfg.ExcludePatterns...)
+		ctx.FormatterArgs = cfg.FormatterArgs
 	}
+
 	// exclude dirs from flag
 	if len(*excludeFlag) > 0 {
-		excludePatterns = append(excludePatterns, strings.Split(*excludeFlag, ",")...)
+		ctx.Exclude = append(ctx.Exclude, strings.Split(*excludeFlag, ",")...)
 	}
 
 	// setup formatters
-	var formatters map[string]Formatter
 	if cfg != nil && cfg.FormattersByExt != nil {
-		formatters = LoadFormattersFromMapping(cfg.FormattersByExt)
+		ctx.Formatters = LoadFormattersFromMapping(cfg.FormattersByExt)
 	} else {
-		formatters = LoadDefaultFormatters()
-	}
-
-	var formatterArgs map[string][]string
-	if cfg != nil {
-		formatterArgs = cfg.FormatterArgs
+		ctx.Formatters = LoadDefaultFormatters()
 	}
 
 	if *printFormattersFlag {
 		log.Println("Formatters:")
-		for ext, formatter := range formatters {
+		for ext, formatter := range ctx.Formatters {
 			log.Printf("%s: %s\n", ext, formatter.Name())
 		}
 		os.Exit(0)
 	}
 
-	var stats RunStats
 	if !*inPlaceFlag && len(patchFile) > 0 {
 		// Setup patch output writer
-		var err error
-		var patchOut io.Writer
 		if patchFile == "-" {
-			patchOut = os.Stdout
+			ctx.PatchOut = os.Stdout
 			log.Print("Writing patch to stdout")
 		} else {
 			var patchFileOut *os.File
-			patchFileOut, err = os.Create(patchFile)
-			patchOut = patchFileOut
-			if err != nil {
+			if patchFileOut, err = os.Create(patchFile); err != nil {
 				log.Fatal(err)
 			}
+			ctx.PatchOut = patchFileOut
 			defer patchFileOut.Close()
 			log.Printf("Writing patch to file %s", patchFile)
 		}
-		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, diffbase, patchOut, *inPlaceFlag, *parallelismFlag)
-	} else {
-		stats = StylizeMain(formatters, formatterArgs, rootDir, excludePatterns, diffbase, nil, *inPlaceFlag, *parallelismFlag)
 	}
 
-	if stats.Error != 0 {
+	stats := ctx.Run()
+
+	if stats.Error > 0 {
 		os.Exit(1)
 	}
 

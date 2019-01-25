@@ -25,6 +25,21 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// TODO: delete this and use ctx.Run() directly
+func runStylize(formatters map[string]Formatter, formatterArgs map[string][]string, rootDir string, exclude []string, gitDiffbase string, patchOut io.Writer, inPlace bool, parallelism int) RunStats {
+	ctx := StylizeContext{
+		Formatters:    formatters,
+		FormatterArgs: formatterArgs,
+		RootDir:       rootDir,
+		Exclude:       exclude,
+		GitDiffbase:   gitDiffbase,
+		PatchOut:      patchOut,
+		InPlace:       inPlace,
+		Parallelism:   parallelism,
+	}
+	return ctx.Run()
+}
+
 func expectMatch(t *testing.T, match bool, pattern, file string) {
 	m := filePatternMatch(pattern, file)
 	if m != match {
@@ -67,7 +82,7 @@ func TestCreatePatch(t *testing.T) {
 	}
 
 	absDirPath, _ := filepath.Abs("testdata")
-	StylizeMain(LoadDefaultFormatters(), nil, absDirPath, []string{"exclude"}, "", patchOut, false, PARALLELISM)
+	runStylize(LoadDefaultFormatters(), nil, absDirPath, []string{"exclude"}, "", patchOut, false, PARALLELISM)
 
 	if !*generateGoldens {
 		assertGoldenMatch(t, goldenFile, patchBuffer.String())
@@ -77,7 +92,7 @@ func TestCreatePatch(t *testing.T) {
 }
 
 func isDirectoryFormatted(t *testing.T, dir string, exclude []string) bool {
-	stats := StylizeMain(LoadDefaultFormatters(), nil, dir, exclude, "", nil, false, PARALLELISM)
+	stats := runStylize(LoadDefaultFormatters(), nil, dir, exclude, "", nil, false, PARALLELISM)
 	return stats.Change == 0 && stats.Error == 0
 }
 
@@ -89,7 +104,7 @@ func TestInPlace(t *testing.T) {
 	t.Log("exclude: " + strings.Join(exclude, ","))
 
 	// run in-place formatting
-	stats := StylizeMain(LoadDefaultFormatters(), nil, dir, exclude, "", nil, true, PARALLELISM)
+	stats := runStylize(LoadDefaultFormatters(), nil, dir, exclude, "", nil, true, PARALLELISM)
 	if stats.Error > 0 {
 		t.Fatal("Formatting failed")
 	}
@@ -120,14 +135,14 @@ func TestInPlaceWithConfig(t *testing.T) {
 	formatters := LoadFormattersFromMapping(cfg.FormattersByExt)
 
 	// run in-place formatting
-	stats := StylizeMain(formatters, nil, dir, cfg.ExcludePatterns, "", nil, true, PARALLELISM)
+	stats := runStylize(formatters, nil, dir, cfg.ExcludePatterns, "", nil, true, PARALLELISM)
 	t.Logf("Stylize results: %d, %d, %d", stats.Change, stats.Total, stats.Error)
 
 	if stats.Change != 1 {
 		t.Fatal("One file should have changed")
 	}
 
-	stats = StylizeMain(formatters, nil, dir, cfg.ExcludePatterns, "", nil, true, PARALLELISM)
+	stats = runStylize(formatters, nil, dir, cfg.ExcludePatterns, "", nil, true, PARALLELISM)
 	t.Logf("Stylize results: %d, %d, %d", stats.Change, stats.Total, stats.Error)
 
 	if stats.Change != 0 {
@@ -160,7 +175,7 @@ func TestGitDiffbase(t *testing.T) {
 	t.Log("exclude: " + strings.Join(exclude, ","))
 
 	// run stylize with diffbase provided
-	stats := StylizeMain(LoadDefaultFormatters(), nil, dir, exclude, "master", nil, true, PARALLELISM)
+	stats := runStylize(LoadDefaultFormatters(), nil, dir, exclude, "master", nil, true, PARALLELISM)
 	if stats.Change != 1 {
 		t.Fatalf("Stylize should have formatted one and only one file. Instead it was %d", stats.Change)
 	}
