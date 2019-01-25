@@ -43,8 +43,3 @@ Stylize currently has support for:
 -   [black](https://github.com/ambv/black)
 
 Other formatters can easily be added. See the files in the 'formatters' directory as examples.
-
-## Python version
-
-This project is a rewrite of the original stylize, which was written in python.
-Although it is no longer being developed, it's source code is available in the `python` branch of this repository.
