@@ -95,26 +95,34 @@ func IterateAllFiles(rootDir string, exclude []string) <-chan string {
 	return files
 }
 
-// Finds files that have been modified since the common ancestor of HEAD and
-// diffbase and sends them onto the returned channel.
-// @return file paths relative to rootDir
-func IterateGitChangedFiles(rootDir string, exclude []string, diffbase string) (<-chan string, error) {
-	changedFiles, err := gitChangedFiles(rootDir, diffbase)
-	if err != nil {
-		return nil, err
-	}
-
-	// find ancestor directory of rootDir that has the .git directory
+// Returns the toplevel directory of the git repo given a subdirectory contained
+// within it (or the toplevel directory itself). This is the directory that
+// contains the ".git" subdirectory.
+func findGitRoot(dir string) (string, error) {
 	var gitRootOut, stderr bytes.Buffer
 	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
 	cmd.Stdout = &gitRootOut
 	cmd.Stderr = &stderr
-	cmd.Dir = rootDir
-	err = cmd.Run()
-	if err != nil {
-		return nil, errors.Wrap(err, stderr.String())
+	cmd.Dir = dir
+	if err := cmd.Run(); err != nil {
+		return "", errors.Wrap(err, stderr.String())
 	}
-	gitRoot := strings.Trim(gitRootOut.String(), "\n")
+	return strings.Trim(gitRootOut.String(), "\n"), nil
+
+}
+
+// Finds files that have been modified since the common ancestor of HEAD and
+// diffbase and sends them onto the returned channel.
+// @return file paths relative to rootDir
+func IterateGitChangedFiles(rootDir string, exclude []string, diffbase string) (<-chan string, error) {
+	gitRoot, err := findGitRoot(rootDir)
+	if err != nil {
+		return nil, err
+	}
+	changedFiles, err := gitChangedFiles(rootDir, diffbase)
+	if err != nil {
+		return nil, err
+	}
 
 	files := make(chan string)
 	go func() {
