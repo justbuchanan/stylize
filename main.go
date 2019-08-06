@@ -29,6 +29,7 @@ func main() {
 	var diffbase string
 	flag.StringVar(&diffbase, "git_diffbase", "", "If provided, stylize only looks at files that differ from the given commit/branch.")
 	flag.StringVar(&diffbase, "g", "", "Alias for git_diffbase")
+	linesFlag := flag.Bool("lines", true, "When used with --git_diffbase/-g, stylize only formats the *lines* in the file that have changed. Formatters that don't support this option will format the whole file.")
 	parallelismFlag := flag.Int("j", 8, "Number of files to process in parallel.")
 	printFormattersFlag := flag.Bool("print_formatters", false, "Print map of file extension to formatter, then exit.")
 	flag.Parse()
@@ -47,6 +48,7 @@ func main() {
 
 	ctx := StylizeContext{
 		GitDiffbase: diffbase,
+		Lines:       *linesFlag,
 		InPlace:     *inPlaceFlag,
 		Parallelism: *parallelismFlag,
 	}

@@ -51,6 +51,10 @@ type StylizeContext struct {
 	Exclude []string
 	// If provided, only looks at files that differ from the diffbase. Otherwise looks at all files.
 	GitDiffbase string
+	// If Lines=true and GitDiffbase is provided, only lines that have changed
+	// will be formatted. Some formatters don't support this, in which case the
+	// whole file will be formatted.
+	Lines bool
 	// If given, a patch is written to the output showing changes that the formatters would make.
 	PatchOut io.Writer
 	// If true, formats all files in-place rather than performing a compliance check.
