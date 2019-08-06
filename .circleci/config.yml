@@ -4,12 +4,11 @@ jobs:
         working_directory: /stylize
         docker:
             - image: archlinux/base
+        environment:
+            GOPATH: /go
+            CIRCLE_ARTIFACTS: /tmp/artifacts
         steps:
-            # setup GOPATH
-            - run: echo 'export GOPATH=/go' >> $BASH_ENV
             - run: echo 'export PATH=$GOPATH/bin:$PATH' >> $BASH_ENV
-
-            - run: echo 'export CIRCLE_ARTIFACTS=/tmp/artifacts' >> $BASH_ENV
             - run: mkdir -p $CIRCLE_ARTIFACTS
 
             # install deps
@@ -17,16 +16,18 @@ jobs:
             - run: go version
             - run: pip install yapf
             - run: npm install -g prettier
-            - run: go get -u github.com/bazelbuild/buildtools/buildifier
-            - run: go get -u github.com/justbuchanan/ci-status
-            - run: go get golang.org/x/tools/cmd/cover
-            - run: go get github.com/mattn/goveralls
+            - run: |
+                go get -u github.com/bazelbuild/buildtools/buildifier \
+                    github.com/justbuchanan/ci-status \
+                    golang.org/x/tools/cmd/cover \
+                    github.com/mattn/goveralls
 
             - checkout
 
             # setup git
-            - run: git config --global user.email "ci@circle"
-            - run: git config --global user.name "Circle Ci"
+            - run: |
+                git config --global user.email "ci@circle"
+                git config --global user.name "Circle Ci"
 
             - run: ci-status --context build --description "go build" "go build"
 
