@@ -1,6 +1,9 @@
 package formatters
 
+// TODO: lines?
+
 import (
+	"github.com/justbuchanan/stylize/util"
 	"io"
 	"os/exec"
 )
@@ -20,10 +23,10 @@ func (F *RustfmtFormatter) IsInstalled() bool {
 	return err == nil
 }
 
-func (F *RustfmtFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
+func (F *RustfmtFormatter) FormatToBuffer(args []string, file util.FileInfo, in io.Reader, out io.Writer) error {
 	return runIOCommand(append([]string{"rustfmt"}, args...), in, out)
 }
 
-func (F *RustfmtFormatter) FormatInPlace(args []string, absPath string) error {
-	return runIOCommand(append([]string{"rustfmt", absPath}, args...), nil, nil)
+func (F *RustfmtFormatter) FormatInPlace(args []string, file util.FileInfo) error {
+	return runIOCommand(append([]string{"rustfmt", file.Path}, args...), nil, nil)
 }

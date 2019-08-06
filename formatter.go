@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/justbuchanan/stylize/formatters"
+	"github.com/justbuchanan/stylize/util"
 	"github.com/pmezard/go-difflib/difflib"
 )
 
@@ -19,29 +20,29 @@ import (
 type Formatter interface {
 	Name() string
 	// Reads the input stream and writes a prettified version to the output.
-	FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error
+	FormatToBuffer(args []string, file util.FileInfo, in io.Reader, out io.Writer) error
 	// Reformats the given file in-place.
-	FormatInPlace(args []string, file string) error
+	FormatInPlace(args []string, file util.FileInfo) error
 	// Check if the required binary is installed.
 	IsInstalled() bool
 	// A list of file extensions (including the '.') that this formatter applies to.
 	FileExtensions() []string
 }
 
-func FormatInPlaceAndCheckModified(F Formatter, args []string, absPath string) (bool, error) {
+func FormatInPlaceAndCheckModified(F Formatter, args []string, file util.FileInfo) (bool, error) {
 	// record modification time before running formatter
-	fi, err := os.Stat(absPath)
+	fi, err := os.Stat(file.Path)
 	if err != nil {
 		return false, err
 	}
 	mtimeBefore := fi.ModTime()
 
-	if err = F.FormatInPlace(args, absPath); err != nil {
+	if err = F.FormatInPlace(args, file); err != nil {
 		return false, err
 	}
 
 	// See if file was modified
-	fi, err = os.Stat(absPath)
+	fi, err = os.Stat(file.Path)
 	if err != nil {
 		return false, err
 	}
@@ -51,8 +52,8 @@ func FormatInPlaceAndCheckModified(F Formatter, args []string, absPath string) (
 	return modified, nil
 }
 
-func CreatePatchWithFormatter(F Formatter, args []string, wdir, file string) (string, error) {
-	fileContent, err := ioutil.ReadFile(filepath.Join(wdir, file))
+func CreatePatchWithFormatter(F Formatter, args []string, wdir string, file util.FileInfo) (string, error) {
+	fileContent, err := ioutil.ReadFile(filepath.Join(wdir, file.Path))
 	if err != nil {
 		return "", err
 	}
@@ -66,8 +67,8 @@ func CreatePatchWithFormatter(F Formatter, args []string, wdir, file string) (st
 	diff, _ := difflib.GetUnifiedDiffString(difflib.UnifiedDiff{
 		A:        difflib.SplitLines(string(fileContent)),
 		B:        difflib.SplitLines(formattedOutput.String()),
-		FromFile: "a/" + file,
-		ToFile:   "b/" + file,
+		FromFile: "a/" + file.Path,
+		ToFile:   "b/" + file.Path,
 		Context:  3,
 	})
 

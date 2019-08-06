@@ -1,6 +1,7 @@
 package formatters
 
 import (
+	"github.com/justbuchanan/stylize/util"
 	"io"
 	"os/exec"
 )
@@ -20,10 +21,10 @@ func (F *BuildifierFormatter) IsInstalled() bool {
 	return err == nil
 }
 
-func (F *BuildifierFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
+func (F *BuildifierFormatter) FormatToBuffer(args []string, file util.FileInfo, in io.Reader, out io.Writer) error {
 	return runIOCommand([]string{"buildifier"}, in, out)
 }
 
-func (F *BuildifierFormatter) FormatInPlace(args []string, file string) error {
-	return runIOCommand([]string{"buildifier", file}, nil, nil)
+func (F *BuildifierFormatter) FormatInPlace(args []string, file util.FileInfo) error {
+	return runIOCommand([]string{"buildifier", file.Path}, nil, nil)
 }

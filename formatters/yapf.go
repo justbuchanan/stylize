@@ -3,6 +3,7 @@ package formatters
 // TODO: lines
 
 import (
+	"github.com/justbuchanan/stylize/util"
 	"io"
 	"os/exec"
 )
@@ -22,11 +23,11 @@ func (F *YapfFormatter) IsInstalled() bool {
 	return err == nil
 }
 
-func (F *YapfFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
+func (F *YapfFormatter) FormatToBuffer(args []string, file util.FileInfo, in io.Reader, out io.Writer) error {
 	args2 := append([]string{"yapf"}, args...)
 	return runIOCommand(args2, in, out)
 }
 
-func (F *YapfFormatter) FormatInPlace(args []string, file string) error {
-	return runIOCommand(append([]string{"yapf", "-i", file}, args...), nil, nil)
+func (F *YapfFormatter) FormatInPlace(args []string, file util.FileInfo) error {
+	return runIOCommand(append([]string{"yapf", "-i", file.Path}, args...), nil, nil)
 }

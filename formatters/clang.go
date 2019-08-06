@@ -3,6 +3,7 @@ package formatters
 // TODO: lines
 
 import (
+	"github.com/justbuchanan/stylize/util"
 	"io"
 	"os/exec"
 )
@@ -22,10 +23,14 @@ func (F *ClangFormatter) IsInstalled() bool {
 	return err == nil
 }
 
-func (F *ClangFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
+func (F *ClangFormatter) FormatToBuffer(args []string, file util.FileInfo, in io.Reader, out io.Writer) error {
+	if len(file.Lines) > 0 {
+		args = append([]string{"-lines"})
+		// TODO
+	}
 	return runIOCommand(append([]string{"clang-format"}, args...), in, out)
 }
 
-func (F *ClangFormatter) FormatInPlace(args []string, file string) error {
-	return runIOCommand(append([]string{"clang-format", "-i", file}, args...), nil, nil)
+func (F *ClangFormatter) FormatInPlace(args []string, file util.FileInfo) error {
+	return runIOCommand(append([]string{"clang-format", "-i", file.Path}, args...), nil, nil)
 }

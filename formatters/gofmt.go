@@ -1,6 +1,7 @@
 package formatters
 
 import (
+	"github.com/justbuchanan/stylize/util"
 	"io"
 )
 
@@ -19,10 +20,10 @@ func (F *GofmtFormatter) IsInstalled() bool {
 	return true
 }
 
-func (F *GofmtFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
+func (F *GofmtFormatter) FormatToBuffer(args []string, file util.FileInfo, in io.Reader, out io.Writer) error {
 	return runIOCommand([]string{"gofmt"}, in, out)
 }
 
-func (F *GofmtFormatter) FormatInPlace(args []string, absPath string) error {
-	return runIOCommand([]string{"gofmt", "-l", "-w", absPath}, nil, nil)
+func (F *GofmtFormatter) FormatInPlace(args []string, file util.FileInfo) error {
+	return runIOCommand([]string{"gofmt", "-l", "-w", file.Path}, nil, nil)
 }

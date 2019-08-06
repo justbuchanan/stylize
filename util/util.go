@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"bytes"
@@ -9,10 +9,19 @@ import (
 	"github.com/pkg/errors"
 )
 
+type FileInfo struct {
+	// File path relative to stylize's working directory. TODO: is this right?
+	Path string
+	// A 1-indexed list of line numbers that should be considered for
+	// formatting. Note: many formatters ignore this.
+	// TODO: should be line ranges, not lines - for example [1:5, 15:20] denotes two ranges.
+	Lines []int
+}
+
 // Returns a list of files that have changed since the given git diffbase. These
 // file paths are relative to the root of the git repo, not necessarily the
 // given rootDir.
-func gitChangedFiles(rootDir, diffbase string) ([]string, error) {
+func GitChangedFiles(rootDir, diffbase string) ([]string, error) {
 	cmd := exec.Command("git", "--no-pager", "diff", "--name-only", diffbase)
 	cmd.Dir = rootDir
 	var out, stderr bytes.Buffer
@@ -30,7 +39,7 @@ func gitChangedFiles(rootDir, diffbase string) ([]string, error) {
 
 // TODO: this implementation has a lot of flaws
 // It would be nice to do something similar to gitignore
-func filePatternMatch(pattern, file string) bool {
+func FilePatternMatch(pattern, file string) bool {
 	if fnmatch.Match(pattern, file, fnmatch.FNM_PATHNAME|fnmatch.FNM_LEADING_DIR) {
 		return true
 	}
@@ -51,9 +60,9 @@ func filePatternMatch(pattern, file string) bool {
 	return false
 }
 
-func fileIsExcluded(file string, exclude []string) bool {
+func FileIsExcluded(file string, exclude []string) bool {
 	for _, e := range exclude {
-		if filePatternMatch(e, file) {
+		if FilePatternMatch(e, file) {
 			return true
 		}
 	}

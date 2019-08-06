@@ -3,6 +3,7 @@ package formatters
 // https://github.com/prettier/prettier
 
 import (
+	"github.com/justbuchanan/stylize/util"
 	"io"
 	"os/exec"
 )
@@ -22,10 +23,10 @@ func (F *PrettierFormatter) IsInstalled() bool {
 	return err == nil
 }
 
-func (F *PrettierFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
-	return runIOCommand(append([]string{"prettier", "--stdin-filepath", file}, args...), in, out)
+func (F *PrettierFormatter) FormatToBuffer(args []string, file util.FileInfo, in io.Reader, out io.Writer) error {
+	return runIOCommand(append([]string{"prettier", "--stdin-filepath", file.Path}, args...), in, out)
 }
 
-func (F *PrettierFormatter) FormatInPlace(args []string, file string) error {
-	return runIOCommand(append([]string{"prettier", "--write", file}, args...), nil, nil)
+func (F *PrettierFormatter) FormatInPlace(args []string, file util.FileInfo) error {
+	return runIOCommand(append([]string{"prettier", "--write", file.Path}, args...), nil, nil)
 }

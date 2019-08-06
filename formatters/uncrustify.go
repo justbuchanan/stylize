@@ -1,6 +1,7 @@
 package formatters
 
 import (
+	"github.com/justbuchanan/stylize/util"
 	"io"
 	"os/exec"
 )
@@ -20,10 +21,10 @@ func (F *UncrustifyFormatter) IsInstalled() bool {
 	return err == nil
 }
 
-func (F *UncrustifyFormatter) FormatToBuffer(args []string, file string, in io.Reader, out io.Writer) error {
+func (F *UncrustifyFormatter) FormatToBuffer(args []string, file util.FileInfo, in io.Reader, out io.Writer) error {
 	return runIOCommand(append([]string{"uncrustify", "-q"}, args...), in, out)
 }
 
-func (F *UncrustifyFormatter) FormatInPlace(args []string, absPath string) error {
-	return runIOCommand(append([]string{"uncrustify", absPath, "--no-backup"}, args...), nil, nil)
+func (F *UncrustifyFormatter) FormatInPlace(args []string, file util.FileInfo) error {
+	return runIOCommand(append([]string{"uncrustify", file.Path, "--no-backup"}, args...), nil, nil)
 }

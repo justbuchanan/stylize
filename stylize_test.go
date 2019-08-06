@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/justbuchanan/stylize/util"
 	"github.com/pmezard/go-difflib/difflib"
 )
 
@@ -42,7 +43,7 @@ func runStylize(formatters map[string]Formatter, formatterArgs map[string][]stri
 }
 
 func expectMatch(t *testing.T, match bool, pattern, file string) {
-	m := filePatternMatch(pattern, file)
+	m := util.FilePatternMatch(pattern, file)
 	if m != match {
 		t.Logf("'%s' '%s'", pattern, file)
 		if match {
@@ -185,7 +186,7 @@ func TestGitDiffbase(t *testing.T) {
 	}
 
 	// git diff
-	files, err := gitChangedFiles(dir, "HEAD")
+	files, err := util.GitChangedFiles(dir, "HEAD")
 	tCheckErr(t, err)
 
 	t.Logf("Files changed by stylize: %s", strings.Join(files, ", "))

@@ -29,6 +29,7 @@ import (
 	"syscall"
 
 	"github.com/bradfitz/slice"
+	"github.com/justbuchanan/stylize/util"
 	"github.com/pkg/errors"
 )
 
@@ -66,8 +67,8 @@ type StylizeContext struct {
 // Walks the given directory and sends all non-excluded files to the returned channel.
 // @param rootDir absolute path to root directory
 // @return file paths relative to rootDir
-func IterateAllFiles(rootDir string, exclude []string) <-chan string {
-	files := make(chan string)
+func IterateAllFiles(rootDir string, exclude []string) <-chan util.FileInfo {
+	files := make(chan util.FileInfo)
 
 	go func() {
 		defer close(files)
@@ -77,7 +78,7 @@ func IterateAllFiles(rootDir string, exclude []string) <-chan string {
 			}
 
 			relPath, _ := filepath.Rel(rootDir, path)
-			isExcluded := fileIsExcluded(relPath, exclude)
+			isExcluded := util.FileIsExcluded(relPath, exclude)
 
 			// Skip the entire directory
 			if fi.IsDir() && isExcluded {
@@ -85,7 +86,7 @@ func IterateAllFiles(rootDir string, exclude []string) <-chan string {
 			}
 
 			if !isExcluded && !fi.IsDir() {
-				files <- relPath
+				files <- util.FileInfo{Path: relPath}
 			}
 
 			return nil
@@ -114,17 +115,17 @@ func findGitRoot(dir string) (string, error) {
 // Finds files that have been modified since the common ancestor of HEAD and
 // diffbase and sends them onto the returned channel.
 // @return file paths relative to rootDir
-func IterateGitChangedFiles(rootDir string, exclude []string, diffbase string) (<-chan string, error) {
+func IterateGitChangedFiles(rootDir string, exclude []string, diffbase string) (<-chan util.FileInfo, error) {
 	gitRoot, err := findGitRoot(rootDir)
 	if err != nil {
 		return nil, err
 	}
-	changedFiles, err := gitChangedFiles(rootDir, diffbase)
+	changedFiles, err := util.GitChangedFiles(rootDir, diffbase)
 	if err != nil {
 		return nil, err
 	}
 
-	files := make(chan string)
+	files := make(chan util.FileInfo)
 	go func() {
 		defer close(files)
 
@@ -137,7 +138,7 @@ func IterateGitChangedFiles(rootDir string, exclude []string, diffbase string) (
 				log.Fatal(err)
 			}
 
-			if fileIsExcluded(relPath, exclude) {
+			if util.FileIsExcluded(relPath, exclude) {
 				continue
 			}
 
@@ -148,20 +149,26 @@ func IterateGitChangedFiles(rootDir string, exclude []string, diffbase string) (
 				continue
 			}
 
-			files <- relPath
+			files <- util.FileInfo{Path: relPath}
+			// TODO: lines
 		}
 	}()
 
 	return files, nil
 }
 
-func runFormatter(rootDir, file string, formatter Formatter, formatterArgs []string, inPlace bool) FormattingResult {
+// @param file FileInfo with Path relative to rootDir
+func runFormatter(rootDir string, file util.FileInfo, formatter Formatter, formatterArgs []string, inPlace bool) FormattingResult {
 	result := FormattingResult{
-		FilePath: file,
+		FilePath: file.Path,
 	}
 
+	// TODO: figure out absolute vs relative file paths. need to know wdir in
+	// order to put rel paths in patch. regular formatter is happier with just
+	// an abs path.
+
 	if inPlace {
-		result.FormatNeeded, result.Error = FormatInPlaceAndCheckModified(formatter, formatterArgs, filepath.Join(rootDir, file))
+		result.FormatNeeded, result.Error = FormatInPlaceAndCheckModified(formatter, formatterArgs, util.FileInfo{Path: filepath.Join(rootDir, file.Path), Lines: file.Lines})
 	} else {
 		result.Patch, result.Error = CreatePatchWithFormatter(formatter, formatterArgs, rootDir, file)
 		result.FormatNeeded = len(result.Patch) > 0
@@ -201,7 +208,7 @@ func CollectPatch(results <-chan FormattingResult, patchOut io.Writer) <-chan Fo
 	return resultsOut
 }
 
-func (ctx *StylizeContext) RunFormattersOnFiles(fileChan <-chan string) <-chan FormattingResult {
+func (ctx *StylizeContext) RunFormattersOnFiles(fileChan <-chan util.FileInfo) <-chan FormattingResult {
 	// use semaphore to limit how many formatting operations we run in parallel
 	semaphore := make(chan int, ctx.Parallelism)
 	var wg sync.WaitGroup
@@ -209,10 +216,10 @@ func (ctx *StylizeContext) RunFormattersOnFiles(fileChan <-chan string) <-chan F
 	resulstOut := make(chan FormattingResult)
 	go func() {
 		for file := range fileChan {
-			ext := filepath.Ext(file)
+			ext := filepath.Ext(file.Path)
 			if len(ext) == 0 {
 				// if file doesn't have an extension, use the file name
-				ext = filepath.Base(file)
+				ext = filepath.Base(file.Path)
 			}
 			formatter := ctx.Formatters[ext]
 			if formatter == nil {
@@ -221,7 +228,7 @@ func (ctx *StylizeContext) RunFormattersOnFiles(fileChan <-chan string) <-chan F
 
 			wg.Add(1)
 			semaphore <- 0 // acquire
-			go func(file string, formatter Formatter, inPlace bool) {
+			go func(file util.FileInfo, formatter Formatter, inPlace bool) {
 				resulstOut <- runFormatter(ctx.RootDir, file, formatter, ctx.FormatterArgs[formatter.Name()], ctx.InPlace)
 				wg.Done()
 				<-semaphore // release
@@ -317,7 +324,7 @@ func (ctx *StylizeContext) Run() RunStats {
 
 	// setup file source
 	var err error
-	var fileChan <-chan string
+	var fileChan <-chan util.FileInfo
 	if len(ctx.GitDiffbase) > 0 {
 		log.Printf("Examining files that have changed in git since %s", ctx.GitDiffbase)
 		fileChan, err = IterateGitChangedFiles(ctx.RootDir, ctx.Exclude, ctx.GitDiffbase)
