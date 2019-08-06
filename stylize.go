@@ -293,10 +293,6 @@ func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) Ru
 	return stats
 }
 
-// @param gitDiffbase If provided, only looks at files that differ from the
-//     diffbase. Otherwise looks at all files.
-// @param formatters A map of file extension -> formatter
-// @return (changeCount, totalCount, errCount)
 func (ctx *StylizeContext) Run() RunStats {
 	if ctx.InPlace && ctx.PatchOut != nil {
 		log.Fatal("Patch output writer should only be provided in non-inplace runs")
