@@ -36,8 +36,7 @@ func FormatInPlaceAndCheckModified(F Formatter, args []string, absPath string) (
 	}
 	mtimeBefore := fi.ModTime()
 
-	err = F.FormatInPlace(args, absPath)
-	if err != nil {
+	if err = F.FormatInPlace(args, absPath); err != nil {
 		return false, err
 	}
 
@@ -131,7 +130,7 @@ func LoadDefaultFormatters() map[string]Formatter {
 var (
 	// Global list of all formatters.
 	// If multiple formatters apply to the same file type, their order here
-	// determines precedence. Lower index = higher priority.
+	// determines precedence. Closer to the top = higher priority.
 	FormatterRegistry = []Formatter{
 		&formatters.ClangFormatter{},
 		&formatters.UncrustifyFormatter{},

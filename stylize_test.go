@@ -33,6 +33,7 @@ func runStylize(formatters map[string]Formatter, formatterArgs map[string][]stri
 		RootDir:       rootDir,
 		Exclude:       exclude,
 		GitDiffbase:   gitDiffbase,
+		Lines:         false,
 		PatchOut:      patchOut,
 		InPlace:       inPlace,
 		Parallelism:   parallelism,
@@ -254,8 +255,7 @@ func runCmd(t *testing.T, dir string, bin string, args ...string) {
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	cmd.Dir = dir
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		t.Fatal(err, stderr.String())
 	}
 }

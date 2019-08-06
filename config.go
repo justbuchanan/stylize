@@ -25,8 +25,7 @@ func LoadConfig(file string) (*Config, error) {
 	}
 
 	var cfg Config
-	err = yaml.Unmarshal(fileContent, &cfg)
-	if err != nil {
+	if err = yaml.Unmarshal(fileContent, &cfg); err != nil {
 		return nil, err
 	}
 	return &cfg, nil

@@ -18,8 +18,7 @@ func gitChangedFiles(rootDir, diffbase string) ([]string, error) {
 	var out, stderr bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return nil, errors.Wrap(err, stderr.String())
 	}
 
