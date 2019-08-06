@@ -3,7 +3,7 @@ jobs:
     build:
         working_directory: /stylize
         docker:
-            - image: justbuchanan/docker-archlinux
+            - image: archlinux/base
         steps:
             # setup GOPATH
             - run: echo 'export GOPATH=/go' >> $BASH_ENV
