@@ -13,7 +13,7 @@ jobs:
 
             # install deps
             - run: apt-get update
-            - run: apt-get install -y clang python-pip go git npm rust
+            - run: apt-get install -y clang python3-pip go git npm rust
             - run: go version
             - run: pip install yapf
             - run: npm install -g prettier
