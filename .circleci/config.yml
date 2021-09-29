@@ -12,6 +12,7 @@ jobs:
             - run: mkdir -p $CIRCLE_ARTIFACTS
 
             # install deps
+            - run: apt-get update
             - run: apt-get install -y clang python-pip go git npm rust
             - run: go version
             - run: pip install yapf
