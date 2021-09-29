@@ -3,7 +3,7 @@ jobs:
     build:
         working_directory: /stylize
         docker:
-            - image: archlinux/base
+            - image: debian
         environment:
             GOPATH: /go
             CIRCLE_ARTIFACTS: /tmp/artifacts
@@ -12,7 +12,7 @@ jobs:
             - run: mkdir -p $CIRCLE_ARTIFACTS
 
             # install deps
-            - run: pacman -Sy --noconfirm clang python-pip go git npm rust
+            - run: apt-get install -y clang python-pip go git npm rust
             - run: go version
             - run: pip install yapf
             - run: npm install -g prettier
