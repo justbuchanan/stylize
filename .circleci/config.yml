@@ -3,7 +3,7 @@ jobs:
     build:
         working_directory: /stylize
         docker:
-            - image: archlinux/base
+            - image: archlinux
         environment:
             GOPATH: /go
             CIRCLE_ARTIFACTS: /tmp/artifacts
