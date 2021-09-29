@@ -12,7 +12,7 @@ jobs:
             - run: mkdir -p $CIRCLE_ARTIFACTS
 
             # install deps
-            - run: pacman -Sy --noconfirm clang python-pip go git npm rust ssh
+            - run: pacman -Sy --noconfirm clang python-pip go git npm rust openssh
             - run: go version
             - run: pip install yapf
             - run: npm install -g prettier
