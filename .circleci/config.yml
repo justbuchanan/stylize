@@ -12,15 +12,15 @@ jobs:
             - run: mkdir -p $CIRCLE_ARTIFACTS
 
             # install deps
-            - run: pacman -Sy --noconfirm clang python-pip go git npm rust
+            - run: pacman -Sy --noconfirm clang python-pip go git npm rust openssh
             - run: go version
             - run: pip install yapf
             - run: npm install -g prettier
             - run: |
-                go get -u github.com/bazelbuild/buildtools/buildifier \
-                    github.com/justbuchanan/ci-status \
-                    golang.org/x/tools/cmd/cover \
-                    github.com/mattn/goveralls
+                go install github.com/bazelbuild/buildtools/buildifier@latest && \
+                go install github.com/justbuchanan/ci-status@latest && \
+                go install golang.org/x/tools/cmd/cover@latest && \
+                go install github.com/mattn/goveralls@latest
 
             - checkout
 
