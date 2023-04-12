@@ -17,7 +17,7 @@ jobs:
             - run: pip install yapf
             - run: npm install -g prettier
             - run: |
-                go install -u github.com/bazelbuild/buildtools/buildifier@latest \
+                go install github.com/bazelbuild/buildtools/buildifier@latest \
                     github.com/justbuchanan/ci-status@latest \
                     golang.org/x/tools/cmd/cover@latest \
                     github.com/mattn/goveralls@latest
