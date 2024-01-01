@@ -8,9 +8,9 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0
 	go4.org v0.0.0-20201209231011-d4a079459e60 // indirect
-	golang.org/x/crypto v0.1.0
-	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/crypto v0.17.0
+	golang.org/x/sys v0.15.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
 
-require golang.org/x/term v0.1.0 // indirect
+require golang.org/x/term v0.15.0 // indirect
