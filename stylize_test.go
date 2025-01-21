@@ -157,7 +157,7 @@ func TestGitDiffbase(t *testing.T) {
 	dir := copyTestData(t, tmp)
 
 	// initial commit
-	runCmd(t, dir, "git", "init")
+	runCmd(t, dir, "git", "init", "--initial-branch=main")
 	runCmd(t, dir, "git", "add", ".")
 	runCmd(t, dir, "git", "commit", "-m", "first commit")
 
@@ -175,7 +175,7 @@ func TestGitDiffbase(t *testing.T) {
 	t.Log("exclude: " + strings.Join(exclude, ","))
 
 	// run stylize with diffbase provided
-	stats := runStylize(LoadDefaultFormatters(), nil, dir, exclude, "master", nil, true, PARALLELISM)
+	stats := runStylize(LoadDefaultFormatters(), nil, dir, exclude, "main", nil, true, PARALLELISM)
 	if stats.Change != 1 {
 		t.Fatalf("Stylize should have formatted one and only one file. Instead it was %d", stats.Change)
 	}
