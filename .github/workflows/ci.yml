@@ -17,6 +17,12 @@ jobs:
       - name: install deps
         run: sudo apt-get update && sudo apt-get install -y black uncrustify
 
+      - name: Install prettier
+        run: npm install -g prettier
+
+      - name: Install yapf
+        run: pip install yapf
+
       - name: Install buildifier
         run: |
           BUILDIFIER_VERSION=$(curl -s https://api.github.com/repos/bazelbuild/buildtools/releases/latest | grep 'tag_name' | cut -d '"' -f4)
