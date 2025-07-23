@@ -15,7 +15,7 @@ jobs:
           go-version: "stable"
       
       - name: install deps
-        run: sudo apt-get update && sudo apt-get install -y black uncrustify yapf buildifier
+        run: sudo apt-get update && sudo apt-get install -y black uncrustify
 
       - name: Build
         run: go build -v ./...
