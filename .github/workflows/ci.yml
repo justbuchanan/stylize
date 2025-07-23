@@ -17,6 +17,13 @@ jobs:
       - name: install deps
         run: sudo apt-get update && sudo apt-get install -y black uncrustify
 
+      - name: Install buildifier
+        run: |
+          BUILDIFIER_VERSION=$(curl -s https://api.github.com/repos/bazelbuild/buildtools/releases/latest | grep 'tag_name' | cut -d '"' -f4)
+          curl -L -o buildifier "https://github.com/bazelbuild/buildtools/releases/download/${BUILDIFIER_VERSION}/buildifier-linux-amd64"
+          chmod +x buildifier
+          sudo mv buildifier /usr/local/bin/
+
       - name: Build
         run: go build -v ./...
 
