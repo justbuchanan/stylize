@@ -30,6 +30,11 @@ jobs:
           chmod +x buildifier
           sudo mv buildifier /usr/local/bin/
 
+      - name: Configure git
+        run: |
+          git config --global user.name "CI"
+          git config --global user.email "ci@example.com"
+
       - name: Build
         run: go build -v ./...
 
