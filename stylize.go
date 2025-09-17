@@ -241,14 +241,14 @@ func LogActionsAndCollectStats(results <-chan FormattingResult, inPlace bool) Ru
 	}
 
 	printf := func(tmp bool, format string, a ...interface{}) {
-		fmt.Fprintf(os.Stderr, padToWidth(fmt.Sprintf(format, a...), termWidth))
+		fmt.Fprint(os.Stderr, padToWidth(fmt.Sprintf(format, a...), termWidth))
 		if tmp {
 			// Print a \r at the end so that the next line printed overwrites
 			// this one. Printing-in-place shows that the program is working,
 			// but doesn't fill up the screen with unnecessary info
-			fmt.Fprintf(os.Stderr, "\r")
+			fmt.Fprint(os.Stderr, "\r")
 		} else {
-			fmt.Fprintf(os.Stderr, "\n")
+			fmt.Fprint(os.Stderr, "\n")
 		}
 	}
 

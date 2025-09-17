@@ -24,7 +24,7 @@
 
           src = ./.;
 
-          vendorHash = "sha256-rBYSRoGhq5RqP4f50Vw78JYPO/6YKQo5q6ckdmPPlJc=";
+          vendorHash = "sha256-zwy7JBuWIhGEtRl+xgQhbzoE3ErzzV7dM31NeZGxNHs=";
           goSum = ./go.sum;
 
           # Don't run tests as part of the build
