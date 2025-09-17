@@ -30,3 +30,6 @@ jobs:
 
       - name: Run tests
         run: nix develop --command go test -v ./...
+
+      - name: Go Vet
+        run: nix develop --command go vet ./...
