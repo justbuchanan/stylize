@@ -1,4 +1,4 @@
-# Stylize [![circleci](https://circleci.com/gh/justbuchanan/stylize.svg?style=shield)](https://circleci.com/gh/justbuchanan/stylize) [![coveralls](https://coveralls.io/repos/justbuchanan/stylize/badge.svg?branch=master&service=github)](https://coveralls.io/github/justbuchanan/stylize?branch=master)
+# Stylize [![Nix CI](https://github.com/justbuchanan/stylize/actions/workflows/nix.yml/badge.svg)](https://github.com/justbuchanan/stylize/actions/workflows/nix.yml)
 
 Stylize quickly reformats or checkstyles an entire repository of code.
 It's a wrapper over other checkstyle programs such as `clang-format` or `yapf` that lets you use one command to operate on your entire repo, consisting of multiple types of files.
