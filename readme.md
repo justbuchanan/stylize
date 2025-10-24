@@ -3,6 +3,10 @@
 Stylize quickly reformats or checkstyles an entire repository of code.
 It's a wrapper over other checkstyle programs such as `clang-format` or `yapf` that lets you use one command to operate on your entire repo, consisting of multiple types of files.
 
+## Status
+
+This repository is archived. I've switched to using treefmt instead: https://github.com/numtide/treefmt.
+
 ## Usage
 
 ```bash
